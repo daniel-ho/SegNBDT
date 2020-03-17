@@ -1,0 +1,3 @@
+data/cityscapes
+pretrained_models/
+*.pyc
