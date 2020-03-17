@@ -29,6 +29,7 @@ class PASCALContext(BaseDataset):
                  crop_size=(480, 480), 
                  downsample_rate=1,
                  scale_factor=16,
+                 center_crop_test=False,
                  mean=[0.485, 0.456, 0.406], 
                  std=[0.229, 0.224, 0.225],):
     
@@ -67,8 +68,6 @@ class PASCALContext(BaseDataset):
             427, 44, 45, 46, 308, 59, 440, 445, 31, 232, 65, 354, 424, 
             68, 326, 72, 458, 34, 207, 80, 355, 85, 347, 220, 349, 360, 
             98, 187, 104, 105, 366, 189, 368, 113, 115]))
-        
-        self._key = np.array(range(len(self._mapping))).astype('uint8')
 
         print('mask_file:', mask_file)
         if os.path.exists(mask_file):
