@@ -11,6 +11,7 @@ yacs>=0.1.5
 tensorboardX>=1.6
 tqdm
 ninja
-torchvision==0.3.0
+torchvision
 nltk
 sklearn
+torch==1.4.0
