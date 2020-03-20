@@ -138,6 +138,15 @@ def validate(config, testloader, model, writer_dict, device):
 
 def testval(config, test_dataset, testloader, model, 
         sv_dir='', sv_pred=False):
+
+    from nbdt.analysis import SoftEmbeddedDecisionRules
+    path_graph = 'data/cityscapes/graph-induced-HRNet-w18-v1.json'
+    path_wnids = 'data/cityscapes/wnids.txt'
+    test_dataset.classes = [f'n{i}' for i in range(19)]
+    testloader.dataset.classes = [f'n{i}' for i in range(19)]
+    analyzer = SoftEmbeddedDecisionRules(test_dataset, None, path_graph, path_wnids)
+    analyzer.start_epoch(0)
+
     model.eval()
     confusion_matrix = np.zeros(
         (config.DATASET.NUM_CLASSES, config.DATASET.NUM_CLASSES))
@@ -162,6 +171,13 @@ def testval(config, test_dataset, testloader, model,
                 config.DATASET.NUM_CLASSES,
                 config.TRAIN.IGNORE_LABEL)
 
+            # run analyzer
+            output = pred.permute(0,2,3,1).reshape(-1,pred.shape[1])
+            _, predicted = output.max(1)
+            target = label.reshape(-1,1)
+            stat = analyzer.update_batch(output, predicted, target)
+            nbdt_acc = f'{stat}' if stat else ''
+
             if sv_pred:
                 sv_path = os.path.join(sv_dir,'test_val_results')
                 if not os.path.exists(sv_path):
@@ -175,7 +191,7 @@ def testval(config, test_dataset, testloader, model,
                 tp = np.diag(confusion_matrix)
                 IoU_array = (tp / np.maximum(1.0, pos + res - tp))
                 mean_IoU = IoU_array.mean()
-                logging.info('mIoU: %.4f' % (mean_IoU))
+                logging.info(f'mIoU: {mean_IoU: 4.4f} | {nbdt_acc}')
 
     pos = confusion_matrix.sum(1)
     res = confusion_matrix.sum(0)
@@ -184,6 +200,9 @@ def testval(config, test_dataset, testloader, model,
     mean_acc = (tp/np.maximum(1.0, pos)).mean()
     IoU_array = (tp / np.maximum(1.0, pos + res - tp))
     mean_IoU = IoU_array.mean()
+
+    analyzer.end_epoch(0)
+    analyzer.end_test(0)
 
     return mean_IoU, IoU_array, pixel_acc, mean_acc
 
