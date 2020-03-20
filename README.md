@@ -1,5 +1,8 @@
 # High-resolution networks (HRNets) for Semantic Segmentation 
 
+## NBDT Notes
+- Use PyTorch 1.4 in order to use NBDT code (already included in requirements.txt)
+
 ## Branches
 - This is the implementation for PyTorch 1.1.
 - The HRNet + OCR version ia available [here](https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/HRNet-OCR).
