@@ -197,7 +197,7 @@ def main():
     path_graph = 'data/cityscapes/graph-induced-hrnet-w18-v1.json'
     path_wnids = 'data/cityscapes/wnids.txt'
     classes = [f'n{i}' for i in range(19)]
-    criterion = SoftTreeSupLoss(path_graph, path_wnids, classes, criterion=criterion, tree_supervision_weight=100)
+    criterion = SoftTreeSupLoss(path_graph, path_wnids, classes, criterion=criterion, tree_supervision_weight=10)
 
     model = FullModel(model, criterion)
     model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
