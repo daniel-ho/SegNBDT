@@ -154,6 +154,7 @@ def testval(config, test_dataset, testloader, model,
         for index, batch in enumerate(tqdm(testloader)):
             image, label, _, name = batch
             size = label.size()
+            image, label = image.to(model.device), label.long().to(model.device)
             pred = test_dataset.multi_scale_inference(
                         model, 
                         image, 
