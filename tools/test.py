@@ -74,7 +74,7 @@ def main():
         model_state_file = config.TEST.MODEL_FILE
     else:
         model_state_file = os.path.join(final_output_dir,
-                                        'final_state.pth')
+                                        'best.pth')
     logger.info('=> loading model from {}'.format(model_state_file))
         
     pretrained_dict = torch.load(model_state_file)
@@ -86,6 +86,13 @@ def main():
             '=> loading {} from pretrained model'.format(k))
     model_dict.update(pretrained_dict)
     model.load_state_dict(model_dict)
+
+    # Wrap original model with NBDT
+    from nbdt.model import SoftNBDT
+    path_graph = 'lib/nbdt/hierarchies/Cityscapes/graph-induced-HRNet-w18-v1.json'
+    path_wnids = 'lib/nbdt/wnids/Cityscapes.txt'
+    classes = [f'n{i}' for i in range(19)]
+    model = SoftNBDT(path_graph, path_wnids, classes, model)
 
     gpus = list(config.GPUS)
     model = nn.DataParallel(model, device_ids=gpus).cuda()

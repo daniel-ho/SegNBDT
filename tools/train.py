@@ -194,8 +194,8 @@ def main():
                                  weight=train_dataset.class_weights)
 
     from nbdt.loss import SoftTreeSupLoss
-    path_graph = 'data/cityscapes/graph-induced-HRNet-w18-v1.json'
-    path_wnids = 'data/cityscapes/wnids.txt'
+    path_graph = 'lib/nbdt/hierarchies/Cityscapes/graph-induced-HRNet-w18-v1.json'
+    path_wnids = 'lib/nbdt/wnids/Cityscapes.txt'
     classes = [f'n{i}' for i in range(19)]
     criterion = SoftTreeSupLoss(path_graph, path_wnids, classes, criterion=criterion, tree_supervision_weight=10)
 
