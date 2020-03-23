@@ -88,11 +88,11 @@ def main():
     model.load_state_dict(model_dict)
 
     # Wrap original model with NBDT
-    from nbdt.model import SoftNBDT
+    from nbdt.model import SoftSegNBDT
     path_graph = 'lib/nbdt/hierarchies/Cityscapes/graph-induced-HRNet-w18-v1.json'
     path_wnids = 'lib/nbdt/wnids/Cityscapes.txt'
     classes = [f'n{i}' for i in range(19)]
-    model = SoftNBDT('Cityscapes', model, path_graph=path_graph,
+    model = SoftSegNBDT('Cityscapes', model, path_graph=path_graph,
         path_wnids=path_wnids, classes=classes)
 
     gpus = list(config.GPUS)
