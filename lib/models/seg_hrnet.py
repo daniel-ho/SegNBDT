@@ -451,6 +451,9 @@ class HighResolutionNet(nn.Module):
 
         x = self.last_layer(x)
 
+        # Store final output for ERF visualization
+        self.feature_maps = [x]
+
         return x
 
     def init_weights(self, pretrained='',):
