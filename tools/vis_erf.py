@@ -110,7 +110,8 @@ def main():
     min_j, max_j = np.min(nonzero_j), np.max(nonzero_j)
     rect_origin = (min_i, min_j)
     rect_h, rect_w = max_i-min_i, max_j-min_j
-    rect = patches.Rectangle(rect_origin, rect_w, rect_h, facecolor='none')
+    rect = patches.Rectangle(rect_origin, rect_w, rect_h, 
+        linewidth=1, edgecolor='g', facecolor='none')
 
     # Save plot of gradient
     logger.info('Saving gradient map...')
