@@ -11,6 +11,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 import torch
 import torch.nn as nn
@@ -91,7 +92,7 @@ def main():
 
     # Generate input
     logger.info('Generating input of ones...')
-    input = torch.ones((1,3,config.TEST.IMAGE_SIZE[1],config.TEST.IMAGE_SIZE[0])).float()
+    input = torch.ones((1,3,config.TEST.IMAGE_SIZE[1],config.TEST.IMAGE_SIZE[0])).float().to(device)
     input = torch.autograd.Variable(input, requires_grad=True)
 
     # Run input through network + compute backward pass
@@ -100,12 +101,24 @@ def main():
     output_grad = torch.zeros_like(output)
     output_grad[0,0,args.out_i,args.out_j] = 1.
     output.backward(gradient=output_grad)
-    input_grad = input.grad[0,0].data.numpy()
+    input_grad = input.grad[0,0].cpu().data.numpy()
+
+    # Compute receptive field rectangle
+    nonzero_i = np.nonzero(np.sum(input_grad, axis=0))
+    min_i, max_i = np.min(nonzero_i), np.max(nonzero_i)
+    nonzero_j = np.nonzero(np.sum(input_grad, axis=1))
+    min_j, max_j = np.min(nonzero_j), np.max(nonzero_j)
+    rect_origin = (min_i, min_j)
+    rect_h, rect_w = max_i-min_i, max_j-min_j
+    rect = patches.Rectangle(rect_origin, rect_w, rect_h, facecolor='none')
 
     # Save plot of gradient
+    logger.info('Saving gradient map...')
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.imshow(input_grad, cmap='coolwarm')
+    ax.add_patch(rect)
+    plt.savefig(os.path.join(final_output_dir, 'erf.png'))
 
 if __name__ == '__main__':
     main()
