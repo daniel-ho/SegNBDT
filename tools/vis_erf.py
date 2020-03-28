@@ -106,9 +106,9 @@ def main():
     input_grad = input.grad[0,0].cpu().data.numpy()
 
     # Compute receptive field rectangle
-    nonzero_i = np.nonzero(np.sum(input_grad, axis=0))
+    nonzero_i = np.nonzero(np.sum(input_grad, axis=1))
     min_i, max_i = np.min(nonzero_i), np.max(nonzero_i)
-    nonzero_j = np.nonzero(np.sum(input_grad, axis=1))
+    nonzero_j = np.nonzero(np.sum(input_grad, axis=0))
     min_j, max_j = np.min(nonzero_j), np.max(nonzero_j)
     rect_origin = (min_j, min_i)
     rect_h, rect_w = max_i-min_i, max_j-min_j
@@ -121,9 +121,9 @@ def main():
     ax = fig.add_subplot(111)
     ax.imshow(input_grad, cmap='coolwarm')
     ax.add_patch(rect)
-    title_values = [output.shape[2],output.shape[3],erf_center_i,erf_center_j,rect_origin[0],rect_origin[1],rect_h,rect_w]
+    title_values = [output.shape[2],output.shape[3],erf_center_i,erf_center_j,rect_origin[1],rect_origin[0],rect_h,rect_w]
     ax.set_title("Output Size: {} x {}, Output Pixel: ({},{})\n ERF Origin: ({},{}), ERF Size: {} x {}".format(*title_values))
-    save_path = os.path.join(final_output_dir, 'erf_{}_{}.png'.format(args.offset_j,args.offset_j))
+    save_path = os.path.join(final_output_dir, 'erf_{}_{}.png'.format(args.offset_i,args.offset_j))
     plt.savefig(save_path)
 
 if __name__ == '__main__':
