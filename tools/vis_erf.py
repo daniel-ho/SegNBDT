@@ -100,7 +100,8 @@ def main():
     output = model(input)
     output_grad = torch.zeros_like(output)
     center_i, center_j = output.shape[2]//2, output.shape[3]//2
-    output_grad[0,0,center_i+args.offset_i,center_j+args.offset_j] = 1.
+    erf_center_i, erf_center_j = center_i+args.offset_i,center_j+args.offset_j
+    output_grad[0,0,erf_center_i,erf_center_j] = 1.
     output.backward(gradient=output_grad)
     input_grad = input.grad[0,0].cpu().data.numpy()
 
@@ -120,7 +121,9 @@ def main():
     ax = fig.add_subplot(111)
     ax.imshow(input_grad, cmap='coolwarm')
     ax.add_patch(rect)
-    plt.savefig(os.path.join(final_output_dir, 'erf.png'))
+    ax.set_title("Center: ({},{}), ERF Size: {} x {}".format(erf_center_i, erf_center_j,rect_h,rect_w))
+    save_path = os.path.join(final_output_dir, 'erf_{}_{}.png'.format(args.offset_j,args.offset_j))
+    plt.savefig(save_path)
 
 if __name__ == '__main__':
     main()
