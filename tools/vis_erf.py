@@ -33,10 +33,10 @@ def parse_args():
                         help='experiment configure file name',
                         required=True,
                         type=str)
-    parser.add_argument('--out-i', type=int, default=0, 
-                        help='i coordinate of output to compute ERF')
-    parser.add_argument('--out-j', type=int, default=0, 
-                        help='j coordinate of output to compute ERF')
+    parser.add_argument('--offset-i', type=int, default=0, 
+                        help='Offset of i coordinate from center of output to compute ERF')
+    parser.add_argument('--offset-j', type=int, default=0, 
+                        help='Offset of j coordinate from center of output to compute ERF')
     parser.add_argument('opts',
                         help="Modify config options using the command-line",
                         default=None,
@@ -99,7 +99,8 @@ def main():
     logger.info('Computing backward pass...')
     output = model(input)
     output_grad = torch.zeros_like(output)
-    output_grad[0,0,args.out_i,args.out_j] = 1.
+    center_i, center_j = output.shape[2]//2, output.shape[3]//2
+    output_grad[0,0,center_i+args.offset_i,center_j+args.offset_j] = 1.
     output.backward(gradient=output_grad)
     input_grad = input.grad[0,0].cpu().data.numpy()
 
