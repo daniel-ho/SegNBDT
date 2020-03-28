@@ -121,7 +121,8 @@ def main():
     ax = fig.add_subplot(111)
     ax.imshow(input_grad, cmap='coolwarm')
     ax.add_patch(rect)
-    ax.set_title("Center: ({},{}), ERF Size: {} x {}".format(erf_center_i, erf_center_j,rect_h,rect_w))
+    title_values = [erf_center_i, erf_center_j, rect_origin[0], rect_origin[1], rect_h, rect_w]
+    ax.set_title("Output Pixel: ({},{}), ERF Origin: ({},{}), ERF Size: {} x {}".format(*title_values))
     save_path = os.path.join(final_output_dir, 'erf_{}_{}.png'.format(args.offset_j,args.offset_j))
     plt.savefig(save_path)
 
