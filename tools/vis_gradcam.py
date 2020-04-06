@@ -159,7 +159,7 @@ def main():
     # Generate GradCAM + save heatmap
     gradcam_region = gradcam.generate(target_layer=target_layer)[0,0]
     save_path = os.path.join(final_output_dir, 
-        'gradcam-image-{}-pixel_i-{}-pixel_j-{}'.format(*gradcam_args))
+        'gradcam-image-{}-pixel_i-{}-pixel_j-{}.png'.format(*gradcam_args))
     raw_image = retrieve_raw_image(test_dataset, args.image_index)
     logger.info('Saving GradCAM heatmap at {}...'.format(save_path))
     save_gradcam(save_path, gradcam_region, raw_image)
