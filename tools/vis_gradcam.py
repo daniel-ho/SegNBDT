@@ -114,6 +114,9 @@ def main():
 
     # Retrieve input image corresponding to args.image_index
     test_size = (config.TEST.IMAGE_SIZE[1], config.TEST.IMAGE_SIZE[0])
+    assert args.pixel_i < test_size[0] and args.pixel_j < test_size[1], \
+        "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
+            args.pixel_i,args.pixel_j,test_size[0],test_size[1])
     test_dataset = eval('datasets.'+config.DATASET.DATASET)(
                         root=config.DATASET.ROOT,
                         list_path=config.DATASET.TEST_SET,
@@ -125,8 +128,9 @@ def main():
                         base_size=config.TEST.BASE_SIZE,
                         crop_size=test_size,
                         downsample_rate=1)
-    image,_,_,_ = test_dataset[args.image_index]
-    image = image.unsqueeze(0).to(device)
+    image,_,_,name = test_dataset[args.image_index]
+    image = torch.from_numpy(image).unsqueeze(0).to(device)
+    logger.info("Using image {}...".format(name))
 
     # Define target layer
     if args.target_layer:
