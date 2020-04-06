@@ -53,6 +53,12 @@ def parse_args():
 
     return args
 
+def compute_output_coord(pixel_i, pixel_j, image_shape, output_shape):
+    ratio_i, ratio_j = output_shape[0]/image_shape[0], output_shape[1]/image_shape[1]
+    out_pixel_i = int(np.floor(pixel_i * ratio_i))
+    out_pixel_j = int(np.floor(pixel_j * ratio_j))
+    return out_pixel_i, out_pixel_j
+
 def retrieve_raw_image(dataset, index):
     item = dataset.files[index]
     image = cv2.imread(os.path.join(dataset.root,'cityscapes',item["img"]),
@@ -132,12 +138,12 @@ def main():
     image = torch.from_numpy(image).unsqueeze(0).to(device)
     logger.info("Using image {}...".format(name))
 
-    # Define target layer
+    # Define target layer as final convolution layer if not specified
     if args.target_layer:
         target_layer = args.target_layer
     else:
-        for name, module in self.model.named_modules()[::-1]:
-            if 'conv' in name:
+        for name, module in list(model.named_modules())[::-1]:
+            if isinstance(module, nn.Conv2d):
                 target_layer = name
             break
     logger.info('Target layer set to {}'.format(target_layer))
@@ -147,7 +153,8 @@ def main():
     logger.info('Running GradCAM on image {} at pixel ({},{})...'.format(*gradcam_args))
     gradcam = SegGradCAM(model=model, candidate_layers=[target_layer])
     pred_probs, pred_labels = gradcam.forward(image)
-    gradcam.backward(pred_labels[:,[0],:,:], args.pixel_i, args.pixel_j)
+    pixel_i, pixel_j = compute_output_coord(args.pixel_i, args.pixel_j, test_size, pred_probs.shape[2:])
+    gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
 
     # Generate GradCAM + save heatmap
     gradcam_region = gradcam.generate(target_layer=target_layer)[0,0]
