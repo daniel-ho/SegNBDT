@@ -196,7 +196,7 @@ def main():
     from nbdt.loss import SoftSegTreeSupLoss
     classes = [f'n{i}' for i in range(19)]
     criterion = SoftSegTreeSupLoss('Cityscapes', criterion, classes=classes,
-        hierarchy='induced-HRNet-w18-v1', tree_supervision_weight=10)
+        hierarchy='induced-HRNet-w18-v1', tree_supervision_weight=100)
 
     model = FullModel(model, criterion)
     model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
