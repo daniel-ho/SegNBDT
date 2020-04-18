@@ -89,11 +89,9 @@ def main():
 
     # Wrap original model with NBDT
     from nbdt.model import SoftSegNBDT
-    path_graph = 'lib/nbdt/hierarchies/Cityscapes/graph-induced-HRNet-w18-v1.json'
-    path_wnids = 'lib/nbdt/wnids/Cityscapes.txt'
     classes = [f'n{i}' for i in range(19)]
-    model = SoftSegNBDT('Cityscapes', model, path_graph=path_graph,
-        path_wnids=path_wnids, classes=classes)
+    model = SoftSegNBDT('Cityscapes', model, classes=classes,
+        hierarchy='induced-HRNet-w18-v1')
 
     gpus = list(config.GPUS)
     model = nn.DataParallel(model, device_ids=gpus).cuda()
