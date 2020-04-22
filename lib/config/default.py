@@ -109,10 +109,11 @@ _C.DEBUG.SAVE_HEATMAPS_GT = False
 _C.DEBUG.SAVE_HEATMAPS_PRED = False
 
 # NBDT
-_C.USE_NBDT = False
-_C.DATASET = 'Cityscapes'
-_C.HIERARCHY = 'induced-HRNet-w18-v1'
-_C.TSW = 10
+_C.NBDT = CN()
+_C.NBDT.USE_NBDT = False
+_C.NBDT.DATASET = 'Cityscapes'
+_C.NBDT.HIERARCHY = 'induced-HRNet-w18-v1'
+_C.NBDT.TSW = 10
 
 
 def update_config(cfg, args):
