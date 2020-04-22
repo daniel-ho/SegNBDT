@@ -88,10 +88,9 @@ def main():
     model.load_state_dict(model_dict)
 
     # Wrap original model with NBDT
-    from nbdt.model import SoftSegNBDT
-    classes = [f'n{i}' for i in range(19)]
-    model = SoftSegNBDT('Cityscapes', model, classes=classes,
-        hierarchy='induced-HRNet-w18-v1')
+    if config.NBDT.USE_NBDT:
+        from nbdt.model import SoftSegNBDT
+        model = SoftSegNBDT(config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY)
 
     gpus = list(config.GPUS)
     model = nn.DataParallel(model, device_ids=gpus).cuda()

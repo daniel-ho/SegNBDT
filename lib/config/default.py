@@ -108,6 +108,12 @@ _C.DEBUG.SAVE_BATCH_IMAGES_PRED = False
 _C.DEBUG.SAVE_HEATMAPS_GT = False
 _C.DEBUG.SAVE_HEATMAPS_PRED = False
 
+# NBDT
+_C.USE_NBDT = False
+_C.DATASET = 'Cityscapes'
+_C.HIERARCHY = 'induced-HRNet-w18-v1'
+_C.TSW = 10
+
 
 def update_config(cfg, args):
     cfg.defrost()

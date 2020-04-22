@@ -1,3 +1,4 @@
 data/cityscapes
 pretrained_models/
 *.pyc
+.DS_Store

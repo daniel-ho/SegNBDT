@@ -193,10 +193,11 @@ def main():
         criterion = CrossEntropy(ignore_label=config.TRAIN.IGNORE_LABEL,
                                  weight=train_dataset.class_weights)
 
-    from nbdt.loss import SoftSegTreeSupLoss
-    classes = [f'n{i}' for i in range(19)]
-    criterion = SoftSegTreeSupLoss('Cityscapes', criterion, classes=classes,
-        hierarchy='induced-HRNet-w18-v1', tree_supervision_weight=100)
+    # Wrap criterion with tree supervision loss
+    if config.NBDT.USE_NBDT:
+        from nbdt.loss import SoftSegTreeSupLoss
+        criterion = SoftSegTreeSupLoss(config.NBDT.DATASET, criterion,
+            hierarchy=config.NBDT.HIERARCHY, tree_supervision_weight=config.NBDT.TSW)
 
     model = FullModel(model, criterion)
     model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
