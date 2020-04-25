@@ -103,4 +103,4 @@ NBDT:
   USE_NBDT: true
   DATASET: 'Cityscapes'
   HIERARCHY: 'induced-HRNet-w18-v1'
-  TSW: 10
+  TSW: 100
