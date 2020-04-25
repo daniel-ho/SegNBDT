@@ -153,7 +153,6 @@ python tools/test.py --cfg experiments/cityscapes/seg_hrnet_w48_train_512x1024_s
 Evaluating our model on the PASCAL-Context validation set with multi-scale and flip testing:
 ````bash
 python tools/test.py --cfg experiments/pascal_ctx/seg_hrnet_w48_cls59_480x480_sgd_lr4e-3_wd1e-4_bs_16_epoch200.yaml \
-                     DATASET.TEST_SET testval \
                      TEST.MODEL_FILE hrnet_w48_pascal_context_cls59_480x480.pth \
                      TEST.SCALE_LIST 0.5,0.75,1.0,1.25,1.5,1.75,2.0 \
                      TEST.FLIP_TEST True

@@ -16,11 +16,12 @@ from tqdm import tqdm
 
 class _BaseWrapper(object):
 
-    def __init__(self, model):
+    def __init__(self, model, use_nbdt=False):
         super(_BaseWrapper, self).__init__()
         self.device = next(model.parameters()).device
         self.model = model
         self.handlers = []  # a set of hook function handlers
+        self.use_nbdt = use_nbdt
 
     def _encode_one_hot(self, labels):
         one_hot = torch.zeros_like(self.logits).to(self.device)
@@ -29,7 +30,14 @@ class _BaseWrapper(object):
 
     def forward(self, image):
         self.image_shape = image.shape[2:]
-        self.logits = self.model(image)
+        if self.use_nbdt:
+            outputs = self.model.model(image)
+            # TODO: just for testing
+            node = np.random.choice(self.model.rules.nodes)
+            node_logits = self.model.rules.get_node_logits(outputs,node)
+            self.logits = node_logits
+        else:
+            self.logits = self.model(image)
         self.probs = F.softmax(self.logits, dim=1)
         return self.probs.sort(dim=1, descending=True)  # ordered results
 
@@ -59,8 +67,8 @@ class GradCAM(_BaseWrapper):
     Look at Figure 2 on page 4
     """
 
-    def __init__(self, model, candidate_layers=None):
-        super(GradCAM, self).__init__(model)
+    def __init__(self, model, candidate_layers=None, use_nbdt=False):
+        super(GradCAM, self).__init__(model, use_nbdt)
         self.fmap_pool = {}
         self.grad_pool = {}
         self.candidate_layers = candidate_layers  # list

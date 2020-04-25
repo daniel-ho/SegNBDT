@@ -115,6 +115,11 @@ def main():
     model_dict.update(pretrained_dict)
     model.load_state_dict(model_dict)
 
+    # Wrap original model with NBDT
+    if config.NBDT.USE_NBDT:
+        from nbdt.model import SoftSegNBDT
+        model = SoftSegNBDT(config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY)
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = model.to(device).eval()
 
@@ -149,6 +154,7 @@ def main():
     logger.info('Target layer set to {}'.format(target_layer))
 
     # Run forward + backward passes
+    # Note: Computes backprop wrt most likely predicted class rather than gt class
     gradcam_args = [args.image_index, args.pixel_i, args.pixel_j]
     logger.info('Running GradCAM on image {} at pixel ({},{})...'.format(*gradcam_args))
     gradcam = SegGradCAM(model=model, candidate_layers=[target_layer])
