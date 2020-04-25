@@ -32,7 +32,7 @@ class _BaseWrapper(object):
         self.image_shape = image.shape[2:]
         if self.use_nbdt:
             outputs = self.model.model(image)
-            # TODO: just for testing
+            # TODO: just for testing; specify node later on
             node = np.random.choice(self.model.rules.nodes)
             node_logits = self.model.rules.get_node_logits(outputs,node)
             self.logits = node_logits

@@ -157,13 +157,15 @@ def main():
     # Note: Computes backprop wrt most likely predicted class rather than gt class
     gradcam_args = [args.image_index, args.pixel_i, args.pixel_j]
     logger.info('Running GradCAM on image {} at pixel ({},{})...'.format(*gradcam_args))
-    gradcam = SegGradCAM(model=model, candidate_layers=[target_layer])
+    gradcam = SegGradCAM(model=model, candidate_layers=[target_layer], use_nbdt=config.NBDT.USE_NBDT)
     pred_probs, pred_labels = gradcam.forward(image)
     pixel_i, pixel_j = compute_output_coord(args.pixel_i, args.pixel_j, test_size, pred_probs.shape[2:])
     gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
 
     # Generate GradCAM + save heatmap
     gradcam_region = gradcam.generate(target_layer=target_layer)[0,0]
+    # TODO: write util for generating save path; 
+    # remove model. from target_layer if using nbdt and put node in save path
     save_path = os.path.join(final_output_dir, 
         'gradcam-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.png'.format(*gradcam_args, target_layer))
     raw_image = retrieve_raw_image(test_dataset, args.image_index)
