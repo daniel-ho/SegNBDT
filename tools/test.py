@@ -89,8 +89,8 @@ def main():
 
     # Wrap original model with NBDT
     if config.NBDT.USE_NBDT:
-        from nbdt.model import SoftSegNBDT
-        model = SoftSegNBDT(config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY)
+        from nbdt.model import HardSegNBDT
+        model = HardSegNBDT(config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY)
 
     gpus = list(config.GPUS)
     model = nn.DataParallel(model, device_ids=gpus).cuda()
