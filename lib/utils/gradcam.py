@@ -31,11 +31,14 @@ class _BaseWrapper(object):
     def forward(self, image):
         self.image_shape = image.shape[2:]
         if self.use_nbdt:
+            from nbdt.utils import coerce_tensor
             outputs = self.model.model(image)
-            # TODO: just for testing; specify node later on
+            n,c,h,w = outputs.shape
+            coerced_outputs = coerce_tensor(outputs)
+            # TODO: randomly select node for testing; need to specify node
             node = np.random.choice(self.model.rules.nodes)
-            node_logits = self.model.rules.get_node_logits(outputs,node)
-            self.logits = node_logits
+            node_logits = self.model.rules.get_node_logits(coerced_outputs,node)
+            self.logits = node_logits.reshape(n,h,w,node_logits.shape[-1]).permute(0,3,1,2)
         else:
             self.logits = self.model(image)
         self.probs = F.softmax(self.logits, dim=1)

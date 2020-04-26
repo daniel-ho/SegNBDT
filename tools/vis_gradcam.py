@@ -78,7 +78,7 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False):
 def generate_save_path(output_dir, gradcam_args, target_layer):
     # TODO: put node in save path
     target_layer = target_layer.replace('model.', '')
-    save_path_args = gradcam_args.append(target_layer)
+    save_path_args = gradcam_args + [target_layer]
     save_path = os.path.join(output_dir, 
         'gradcam-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.png'.format(*save_path_args))
     return save_path
