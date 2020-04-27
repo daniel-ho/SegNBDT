@@ -3,6 +3,10 @@
 ## NBDT Notes
 - Use PyTorch 1.4 in order to use NBDT code (already included in requirements.txt)
 
+[Correct Pascal Context Links]
+https://github.com/zhanghang1989/PyTorch-Encoding/blob/master/scripts/prepare_pcontext.py
+https://github.com/zhanghang1989/detail-api
+
 ## Branches
 - This is the implementation for PyTorch 1.1.
 - The HRNet + OCR version ia available [here](https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/HRNet-OCR).
