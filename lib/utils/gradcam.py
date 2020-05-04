@@ -157,3 +157,27 @@ class SegGradCAM(_SegBaseWrapper, GradCAM):
         gcam = gcam.view(B, C, H, W)
 
         return gcam
+
+
+class SegNormGrad(_SegBaseWrapper, GradCAM):
+
+    def generate(self, target_layer):
+        fmaps = self._find(self.fmap_pool, target_layer)
+        grads = self._find(self.grad_pool, target_layer)
+
+        unfold_act = F.unfold(fmaps, kernel_size=3, padding=1)
+        unfold_act = unfold_act.view(1, fmaps.shape[1] * 9, fmaps.shape[2], fmaps.shape[3])
+        gcam = -torch.matmul(unfold_act.permute(0, 2, 3, 1).view(-1, unfold_act.size(1), 1), grads.permute(0, 2, 3, 1).view(-1, 1, grads.size(1)))
+        gcam = gcam.view(gcam.size(0), -1).permute(1, 0).view(1, -1, fmaps.shape[2], fmaps.shape[3])
+        gcam = torch.norm(torch.clamp(gcam, min=0), 2, 1, keepdim=True)
+        gcam = F.interpolate(
+            gcam, self.image_shape, mode="bilinear", align_corners=False
+        )
+
+        B, C, H, W = gcam.shape
+        gcam = gcam.view(B, -1)
+        gcam -= gcam.min(dim=1, keepdim=True)[0]
+        gcam /= gcam.max(dim=1, keepdim=True)[0]
+        gcam = gcam.view(B, C, H, W)
+
+        return gcam
