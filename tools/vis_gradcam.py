@@ -41,8 +41,8 @@ def parse_args():
                         help='i coordinate of pixel from which to compute GradCAM')
     parser.add_argument('--pixel-j', type=int, default=0, 
                         help='j coordinate of pixel from which to compute GradCAM')
-    parser.add_argument('--target-layer', type=str,
-                        help='Target layer from which to compute GradCAM')
+    parser.add_argument('--target-layers', type=str,
+                        help='List of target layers from which to compute GradCAM')
     parser.add_argument('opts',
                         help="Modify config options using the command-line",
                         default=None,
@@ -152,31 +152,40 @@ def main():
     logger.info("Using image {}...".format(name))
 
     # Define target layer as final convolution layer if not specified
-    if args.target_layer:
-        target_layer = args.target_layer
+    if args.target_layers:
+        target_layers = args.target_layers.split(',')
     else:
         for name, module in list(model.named_modules())[::-1]:
             if isinstance(module, nn.Conv2d):
-                target_layer = name
+                target_layers = [name]
             break
-    logger.info('Target layer set to {}'.format(target_layer))
+    logger.info('Target layers set to {}'.format(str(target_layers)))
 
     # Run forward + backward passes
     # Note: Computes backprop wrt most likely predicted class rather than gt class
     gradcam_args = [args.image_index, args.pixel_i, args.pixel_j]
     logger.info('Running GradCAM on image {} at pixel ({},{})...'.format(*gradcam_args))
-    gradcam = SegGradCAM(model=model, candidate_layers=[target_layer], use_nbdt=config.NBDT.USE_NBDT)
+    gradcam = SegGradCAM(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
     pred_probs, pred_labels = gradcam.forward(image)
     # TODO: Fix compute output coord to support gradcam from nbdt nodes
     pixel_i, pixel_j = compute_output_coord(args.pixel_i, args.pixel_j, test_size, pred_probs.shape[2:])
     gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
 
     # Generate GradCAM + save heatmap
-    gradcam_region = gradcam.generate(target_layer=target_layer)[0,0]
-    save_path = generate_save_path(final_output_dir, gradcam_args, target_layer)
+    heatmaps = []
     raw_image = retrieve_raw_image(test_dataset, args.image_index)
-    logger.info('Saving GradCAM heatmap at {}...'.format(save_path))
-    save_gradcam(save_path, gradcam_region, raw_image)
+    for layer in target_layers:
+        gradcam_region = gradcam.generate(target_layer=layer)[0,0]
+        heatmaps.append(gradcam_region)
+        save_path = generate_save_path(final_output_dir, gradcam_args, layer)
+        logger.info('Saving GradCAM heatmap at {}...'.format(save_path))
+        save_gradcam(save_path, gradcam_region, raw_image)
+    if len(heatmaps) > 1:
+        combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
+        combined /= combined.max()
+        save_path = generate_save_path(final_output_dir, gradcam_args, 'combined')
+        logger.info('Saving combined GradCAM heatmap at {}...'.format(save_path))
+        save_gradcam(save_path, combined, raw_image)
 
 
 if __name__ == '__main__':
