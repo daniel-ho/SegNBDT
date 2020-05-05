@@ -24,7 +24,7 @@ import datasets
 from config import config
 from config import update_config
 from core.function import testval
-from utils.gradcam import SegGradCAM
+from utils.gradcam import SegGradCAM, SegNormGrad
 from utils.modelsummary import get_model_summary
 from utils.utils import create_logger
 
@@ -167,7 +167,6 @@ def main():
     logger.info('Running GradCAM on image {} at pixel ({},{})...'.format(*gradcam_args))
     gradcam = SegGradCAM(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
     pred_probs, pred_labels = gradcam.forward(image)
-    # TODO: Fix compute output coord to support gradcam from nbdt nodes
     pixel_i, pixel_j = compute_output_coord(args.pixel_i, args.pixel_j, test_size, pred_probs.shape[2:])
     gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
 
