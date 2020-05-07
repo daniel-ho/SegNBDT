@@ -35,6 +35,8 @@ def parse_args():
                         help='experiment configure file name',
                         required=True,
                         type=str)
+    parser.add_argument('--vis-mode', type=str, default='GradCAM', choices=['GradCAM','NormGrad'],
+                        help='Type of gradient visualization')
     parser.add_argument('--image-index', type=int, default=0,
                         help='Index of input image for GradCAM')
     parser.add_argument('--pixel-i', type=int, default=0, 
@@ -75,12 +77,13 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False):
         gradcam = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
     cv2.imwrite(save_path, np.uint8(gradcam))
 
-def generate_save_path(output_dir, gradcam_args, target_layer):
+def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer):
     # TODO: put node in save path
+    vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
     save_path_args = gradcam_args + [target_layer]
     save_path = os.path.join(output_dir, 
-        'gradcam-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.png'.format(*save_path_args))
+        '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.png'.format(vis_mode, *save_path_args))
     return save_path
 
 def main():
@@ -164,8 +167,8 @@ def main():
     # Run forward + backward passes
     # Note: Computes backprop wrt most likely predicted class rather than gt class
     gradcam_args = [args.image_index, args.pixel_i, args.pixel_j]
-    logger.info('Running GradCAM on image {} at pixel ({},{})...'.format(*gradcam_args))
-    gradcam = SegGradCAM(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
+    logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
+    gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
     pred_probs, pred_labels = gradcam.forward(image)
     pixel_i, pixel_j = compute_output_coord(args.pixel_i, args.pixel_j, test_size, pred_probs.shape[2:])
     gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
@@ -176,14 +179,14 @@ def main():
     for layer in target_layers:
         gradcam_region = gradcam.generate(target_layer=layer)[0,0]
         heatmaps.append(gradcam_region)
-        save_path = generate_save_path(final_output_dir, gradcam_args, layer)
-        logger.info('Saving GradCAM heatmap at {}...'.format(save_path))
+        save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer)
+        logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
         save_gradcam(save_path, gradcam_region, raw_image)
     if len(heatmaps) > 1:
         combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
         combined /= combined.max()
-        save_path = generate_save_path(final_output_dir, gradcam_args, 'combined')
-        logger.info('Saving combined GradCAM heatmap at {}...'.format(save_path))
+        save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, 'combined')
+        logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
         save_gradcam(save_path, combined, raw_image)
 
 
