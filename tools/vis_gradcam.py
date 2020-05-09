@@ -164,9 +164,9 @@ def main():
             break
     logger.info('Target layers set to {}'.format(str(target_layers)))
 
-    # Run forward + backward passes
-    # Note: Computes backprop wrt most likely predicted class rather than gt class
-    for pixel_i, pixel_j in zip(zip(args.pixel_i, args.pixel_j)):
+    for pixel_i, pixel_j in zip(args.pixel_i, args.pixel_j):
+        # Run forward + backward passes
+        # Note: Computes backprop wrt most likely predicted class rather than gt class
         gradcam_args = [args.image_index, pixel_i, pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
         gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
@@ -174,21 +174,21 @@ def main():
         pixel_i, pixel_j = compute_output_coords(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
 
-    # Generate GradCAM + save heatmap
-    heatmaps = []
-    raw_image = retrieve_raw_image(test_dataset, args.image_index)
-    for layer in target_layers:
-        gradcam_region = gradcam.generate(target_layer=layer)[0,0]
-        heatmaps.append(gradcam_region)
-        save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer)
-        logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
-        save_gradcam(save_path, gradcam_region, raw_image)
-    if len(heatmaps) > 1:
-        combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
-        combined /= combined.max()
-        save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, 'combined')
-        logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
-        save_gradcam(save_path, combined, raw_image)
+        # Generate GradCAM + save heatmap
+        heatmaps = []
+        raw_image = retrieve_raw_image(test_dataset, args.image_index)
+        for layer in target_layers:
+            gradcam_region = gradcam.generate(target_layer=layer)[0,0]
+            heatmaps.append(gradcam_region)
+            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer)
+            logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
+            save_gradcam(save_path, gradcam_region, raw_image)
+        if len(heatmaps) > 1:
+            combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
+            combined /= combined.max()
+            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, 'combined')
+            logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
+            save_gradcam(save_path, combined, raw_image)
 
 
 if __name__ == '__main__':
