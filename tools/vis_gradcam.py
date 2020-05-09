@@ -30,7 +30,7 @@ from utils.utils import create_logger
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Visualize GradCAM')
-    
+
     parser.add_argument('--cfg',
                         help='experiment configure file name',
                         required=True,
@@ -39,9 +39,9 @@ def parse_args():
                         help='Type of gradient visualization')
     parser.add_argument('--image-index', type=int, default=0,
                         help='Index of input image for GradCAM')
-    parser.add_argument('--pixel-i', type=int, default=0, 
+    parser.add_argument('--pixel-i', type=int, default=0, nargs='*',
                         help='i coordinate of pixel from which to compute GradCAM')
-    parser.add_argument('--pixel-j', type=int, default=0, 
+    parser.add_argument('--pixel-j', type=int, default=0, nargs='*',
                         help='j coordinate of pixel from which to compute GradCAM')
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
@@ -82,7 +82,7 @@ def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer):
     vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
     save_path_args = gradcam_args + [target_layer]
-    save_path = os.path.join(output_dir, 
+    save_path = os.path.join(output_dir,
         '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.png'.format(vis_mode, *save_path_args))
     return save_path
 
@@ -115,7 +115,7 @@ def main():
         model_state_file = os.path.join(final_output_dir,
                                         'best.pth')
     logger.info('=> loading model from {}'.format(model_state_file))
-        
+
     pretrained_dict = torch.load(model_state_file)
     model_dict = model.state_dict()
     pretrained_dict = {k[6:]: v for k, v in pretrained_dict.items()
@@ -166,12 +166,13 @@ def main():
 
     # Run forward + backward passes
     # Note: Computes backprop wrt most likely predicted class rather than gt class
-    gradcam_args = [args.image_index, args.pixel_i, args.pixel_j]
-    logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
-    gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
-    pred_probs, pred_labels = gradcam.forward(image)
-    pixel_i, pixel_j = compute_output_coord(args.pixel_i, args.pixel_j, test_size, pred_probs.shape[2:])
-    gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
+    for pixel_i, pixel_j in zip(zip(args.pixel_i, args.pixel_j)):
+        gradcam_args = [args.image_index, pixel_i, pixel_j]
+        logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
+        gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
+        pred_probs, pred_labels = gradcam.forward(image)
+        pixel_i, pixel_j = compute_output_coords(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
+        gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
 
     # Generate GradCAM + save heatmap
     heatmaps = []
