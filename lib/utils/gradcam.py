@@ -33,7 +33,7 @@ class _BaseWrapper(object):
         self.image_shape = image.shape[2:]
         if self.use_nbdt:
             assert self.nbdt_node in self.model.rules.nodes, \
-                "NBDT node must be in {}; node {} not found".format(self.model.rules.nodes, nbdt_node)
+                "NBDT node must be in {}; node {} not found".format(self.model.rules.nodes, self.nbdt_node)
             from nbdt.utils import coerce_tensor
             outputs = self.model.model(image)
             n,c,h,w = outputs.shape
