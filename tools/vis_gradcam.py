@@ -52,6 +52,8 @@ def parse_args():
                              'for the full list of pixels.')
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
+    parser.add_argument('--nbdt-node', type=str, default='',
+                        help='NBDT node from which to compute output logits')
     parser.add_argument('opts',
                         help="Modify config options using the command-line",
                         default=None,
@@ -89,6 +91,8 @@ def retrieve_raw_image(dataset, index):
 
 def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False):
     gradcam = gradcam.cpu().numpy()
+    np_save_path = save_path.replace('.png', '.npy')
+    np.save(np_save_path, gradcam)
     cmap = cm.jet_r(gradcam)[..., :3] * 255.0
     if paper_cmap:
         alpha = gradcam[..., None]
@@ -193,11 +197,12 @@ def main():
 
         # Run forward + backward passes
         # Note: Computes backprop wrt most likely predicted class rather than gt class
-        gradcam_args = [args.image_index, pixel_i, pixel_j]
+        gradcam_args = [args.image_index, args.pixel_i, args.pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
-        gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
+        gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers,
+            use_nbdt=config.NBDT.USE_NBDT, nbdt_node=args.nbdt_node)
         pred_probs, pred_labels = gradcam.forward(image)
-        pixel_i, pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
+        pixel_i, pixel_j = compute_output_coord(args.pixel_i, args.pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
 
         # Generate GradCAM + save heatmap
