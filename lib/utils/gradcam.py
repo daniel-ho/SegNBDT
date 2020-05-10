@@ -16,13 +16,13 @@ from tqdm import tqdm
 
 class _BaseWrapper(object):
 
-    def __init__(self, model, use_nbdt=False, nbdt_node=None):
+    def __init__(self, model, use_nbdt=False, nbdt_node_wnid=None):
         super(_BaseWrapper, self).__init__()
         self.device = next(model.parameters()).device
         self.model = model
         self.handlers = []  # a set of hook function handlers
         self.use_nbdt = use_nbdt
-        self.nbdt_node = nbdt_node
+        self.nbdt_node_wnid = nbdt_node_wnid
 
     def _encode_one_hot(self, labels):
         one_hot = torch.zeros_like(self.logits).to(self.device)
@@ -32,13 +32,14 @@ class _BaseWrapper(object):
     def forward(self, image):
         self.image_shape = image.shape[2:]
         if self.use_nbdt:
-            assert self.nbdt_node in self.model.rules.nodes, \
-                "NBDT node must be in {}; node {} not found".format(self.model.rules.nodes, self.nbdt_node)
+            assert self.nbdt_node_wnid in self.model.rules.wnid_to_node.keys(), \
+                "NBDT node wnid must be in {}; node wnid {} not found".format(self.model.rules.wnid_to_node.keys(), self.nbdt_node_wnid)
             from nbdt.utils import coerce_tensor
             outputs = self.model.model(image)
             n,c,h,w = outputs.shape
             coerced_outputs = coerce_tensor(outputs)
-            node_logits = self.model.rules.get_node_logits(coerced_outputs, self.nbdt_node)
+            nbdt_node = self.model.rules.wnid_to_node[self.nbdt_node_wnid]
+            node_logits = self.model.rules.get_node_logits(coerced_outputs, nbdt_node)
             self.logits = node_logits.reshape(n,h,w,node_logits.shape[-1]).permute(0,3,1,2)
         else:
             self.logits = self.model(image)
@@ -71,8 +72,8 @@ class GradCAM(_BaseWrapper):
     Look at Figure 2 on page 4
     """
 
-    def __init__(self, model, candidate_layers=None, use_nbdt=False, nbdt_node=None):
-        super(GradCAM, self).__init__(model, use_nbdt, nbdt_node)
+    def __init__(self, model, candidate_layers=None, use_nbdt=False, nbdt_node_wnid=None):
+        super(GradCAM, self).__init__(model, use_nbdt, nbdt_node_wnid)
         self.fmap_pool = {}
         self.grad_pool = {}
         self.candidate_layers = candidate_layers  # list

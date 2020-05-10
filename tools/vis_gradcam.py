@@ -52,7 +52,7 @@ def parse_args():
                              'for the full list of pixels.')
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
-    parser.add_argument('--nbdt-node', type=str, default='',
+    parser.add_argument('--nbdt-node-wnid', type=str, default='',
                         help='WNID of NBDT node from which to compute output logits')
     parser.add_argument('opts',
                         help="Modify config options using the command-line",
@@ -101,13 +101,13 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False):
         gradcam = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
     cv2.imwrite(save_path, np.uint8(gradcam))
 
-def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer, use_nbdt, nbdt_node):
+def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer, use_nbdt, nbdt_node_wnid):
     # TODO: put node in save path
     vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
     save_path_args = gradcam_args + [target_layer]
     if use_nbdt:
-        save_path_args += [nbdt_node]
+        save_path_args += [nbdt_node_wnid]
         save_path = os.path.join(output_dir,
             '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}-nbdt-{}.png'.format(vis_mode, *save_path_args))
     else:
@@ -205,9 +205,9 @@ def main():
         gradcam_args = [args.image_index, pixel_i, pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
         if config.NBDT.USE_NBDT:
-            logger.info("Using logits from node with wnid {}...".format(args.nbdt_node))
+            logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
         gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, 
-            use_nbdt=config.NBDT.USE_NBDT, nbdt_node=args.nbdt_node)
+            use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
         pred_probs, pred_labels = gradcam.forward(image)
         pixel_i, pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
@@ -218,13 +218,13 @@ def main():
         for layer in target_layers:
             gradcam_region = gradcam.generate(target_layer=layer)[0,0]
             heatmaps.append(gradcam_region)
-            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer, config.NBDT.USE_NBDT, args.nbdt_node)
+            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, gradcam_region, raw_image)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
-            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, 'combined', config.NBDT.USE_NBDT, args.nbdt_node)
+            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, 'combined', config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, combined, raw_image)
 
