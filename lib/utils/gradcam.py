@@ -70,8 +70,8 @@ class GradCAM(_BaseWrapper):
     Look at Figure 2 on page 4
     """
 
-    def __init__(self, model, candidate_layers=None, use_nbdt=False):
-        super(GradCAM, self).__init__(model, use_nbdt)
+    def __init__(self, model, candidate_layers=None, use_nbdt=False, nbdt_node=nbdt_node):
+        super(GradCAM, self).__init__(model, use_nbdt, nbdt_node)
         self.fmap_pool = {}
         self.grad_pool = {}
         self.candidate_layers = candidate_layers  # list
