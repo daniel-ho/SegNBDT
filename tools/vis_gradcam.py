@@ -47,6 +47,9 @@ def parse_args():
                         help='Range for pixel i. Expects [start, end) and step.')
     parser.add_argument('--pixel-j-range', type=int, default=0, nargs=3,
                         help='Range for pixel j. Expects [start, end) and step.')
+    parser.add_argument('--pixel-cartesian-product', action='store_true',
+                        help='Compute cartesian product between all is and js '
+                             'for the full list of pixels.')
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
     parser.add_argument('opts',
@@ -58,6 +61,19 @@ def parse_args():
     update_config(config, args)
 
     return args
+
+def get_pixels(pixel_i, pixel_j, pixel_i_range, pixel_j_range, cartesian_product):
+    assert not (args.pixel_i and args.pixel_i_range), \
+        'Can only specify list of numbers (--pixel-i) OR a range (--pixel-i-range)'
+    pixel_is = args.pixel_i or range(*args.pixel_i_range)
+
+    assert not (args.pixel_j and args.pixel_j_range), \
+        'Can only specify list of numbers (--pixel-j) OR a range (--pixel-j-range)'
+    pixel_js = args.pixel_j or range(*args.pixel_j_range)
+
+    if cartesian_product:
+        return sum([ [(i, j) for i in pixel_is] for j in pixel_js ], [])
+    return list(zip(pixel_is, pixel_js))
 
 def compute_output_coord(pixel_i, pixel_j, image_shape, output_shape):
     ratio_i, ratio_j = output_shape[0]/image_shape[0], output_shape[1]/image_shape[1]
@@ -165,15 +181,11 @@ def main():
             break
     logger.info('Target layers set to {}'.format(str(target_layers)))
 
-    assert not (args.pixel_i and args.pixel_i_range), \
-        'Can only specify list of numbers (--pixel-i) OR a range (--pixel-i-range)'
-    pixel_is = args.pixel_i or range(*args.pixel_i_range)
+    pixels = get_pixels(
+        args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
+        args.pixel_cartesian_product)
 
-    assert not (args.pixel_j and args.pixel_j_range), \
-        'Can only specify list of numbers (--pixel-j) OR a range (--pixel-j-range)'
-    pixel_js = args.pixel_j or range(*args.pixel_j_range)
-
-    for pixel_i, pixel_j in zip(pixels_i, pixels_j):
+    for pixel_i, pixel_j in pixels:
         assert pixel_i < test_size[0] and pixel_j < test_size[1], \
             "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
                 pixel_i,pixel_j,test_size[0],test_size[1])
