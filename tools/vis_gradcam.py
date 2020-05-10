@@ -202,7 +202,7 @@ def main():
 
         # Run forward + backward passes
         # Note: Computes backprop wrt most likely predicted class rather than gt class
-        gradcam_args = [args.image_index, args.pixel_i, args.pixel_j]
+        gradcam_args = [args.image_index, pixel_i, pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
         if config.NBDT.USE_NBDT:
             logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
