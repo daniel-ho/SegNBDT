@@ -16,12 +16,13 @@ from tqdm import tqdm
 
 class _BaseWrapper(object):
 
-    def __init__(self, model, use_nbdt=False):
+    def __init__(self, model, use_nbdt=False, nbdt_node=None):
         super(_BaseWrapper, self).__init__()
         self.device = next(model.parameters()).device
         self.model = model
         self.handlers = []  # a set of hook function handlers
         self.use_nbdt = use_nbdt
+        self.nbdt_node = nbdt_node
 
     def _encode_one_hot(self, labels):
         one_hot = torch.zeros_like(self.logits).to(self.device)
@@ -31,13 +32,13 @@ class _BaseWrapper(object):
     def forward(self, image):
         self.image_shape = image.shape[2:]
         if self.use_nbdt:
+            assert self.nbdt_node in self.model.rules.nodes, \
+                "NBDT node must be in {}; node {} not found".format(self.model.rules.nodes, self.nbdt_node)
             from nbdt.utils import coerce_tensor
             outputs = self.model.model(image)
             n,c,h,w = outputs.shape
             coerced_outputs = coerce_tensor(outputs)
-            # TODO: randomly select node for testing; need to specify node
-            node = np.random.choice(self.model.rules.nodes)
-            node_logits = self.model.rules.get_node_logits(coerced_outputs,node)
+            node_logits = self.model.rules.get_node_logits(coerced_outputs, self.nbdt_node)
             self.logits = node_logits.reshape(n,h,w,node_logits.shape[-1]).permute(0,3,1,2)
         else:
             self.logits = self.model(image)
