@@ -209,8 +209,8 @@ def main():
         gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, 
             use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
         pred_probs, pred_labels = gradcam.forward(image)
-        pixel_i, pixel_j = compute_output_coord(args.pixel_i, args.pixel_j, test_size, pred_probs.shape[2:])
-        gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
+        output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
+        gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 
         # Generate GradCAM + save heatmap
         heatmaps = []
