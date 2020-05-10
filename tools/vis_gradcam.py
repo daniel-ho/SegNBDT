@@ -180,7 +180,7 @@ def main():
         gradcam_args = [args.image_index, pixel_i, pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
         if config.NBDT.USE_NBDT:
-            logger.info("Using logits from node with wnid {}...".format(nbdt_node))
+            logger.info("Using logits from node with wnid {}...".format(args.nbdt_node))
         gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, 
             use_nbdt=config.NBDT.USE_NBDT, nbdt_node=args.nbdt_node)
         pred_probs, pred_labels = gradcam.forward(image)
