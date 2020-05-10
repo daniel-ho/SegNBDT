@@ -136,9 +136,6 @@ def main():
 
     # Retrieve input image corresponding to args.image_index
     test_size = (config.TEST.IMAGE_SIZE[1], config.TEST.IMAGE_SIZE[0])
-    assert args.pixel_i < test_size[0] and args.pixel_j < test_size[1], \
-        "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
-            args.pixel_i,args.pixel_j,test_size[0],test_size[1])
     test_dataset = eval('datasets.'+config.DATASET.DATASET)(
                         root=config.DATASET.ROOT,
                         list_path=config.DATASET.TEST_SET,
@@ -165,13 +162,17 @@ def main():
     logger.info('Target layers set to {}'.format(str(target_layers)))
 
     for pixel_i, pixel_j in zip(args.pixel_i, args.pixel_j):
+        assert pixel_i < test_size[0] and pixel_j < test_size[1], \
+            "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
+                pixel_i,pixel_j,test_size[0],test_size[1])
+
         # Run forward + backward passes
         # Note: Computes backprop wrt most likely predicted class rather than gt class
         gradcam_args = [args.image_index, pixel_i, pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
         gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, use_nbdt=config.NBDT.USE_NBDT)
         pred_probs, pred_labels = gradcam.forward(image)
-        pixel_i, pixel_j = compute_output_coords(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
+        pixel_i, pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], pixel_i, pixel_j)
 
         # Generate GradCAM + save heatmap
