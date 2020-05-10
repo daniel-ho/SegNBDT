@@ -190,6 +190,10 @@ def main():
             break
     logger.info('Target layers set to {}'.format(str(target_layers)))
 
+    # Append model. to target layers if using nbdt
+    if config.NBDT.USE_NBDT:
+        target_layers = ['model.' + layer for layer in target_layers]
+
     pixels = get_pixels(
         args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
         args.pixel_cartesian_product)
