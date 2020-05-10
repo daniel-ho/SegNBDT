@@ -53,11 +53,7 @@ def parse_args():
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
     parser.add_argument('--nbdt-node', type=str, default='',
-<<<<<<< HEAD
-                        help='NBDT node from which to compute output logits')
-=======
                         help='WNID of NBDT node from which to compute output logits')
->>>>>>> b1f0287150d00979e7b80c4ca45c579d073df2a9
     parser.add_argument('opts',
                         help="Modify config options using the command-line",
                         default=None,
@@ -206,7 +202,7 @@ def main():
 
         # Run forward + backward passes
         # Note: Computes backprop wrt most likely predicted class rather than gt class
-        gradcam_args = [args.image_index, args.pixel_i, args.pixel_j]
+        gradcam_args = [args.image_index, pixel_i, pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
         if config.NBDT.USE_NBDT:
             logger.info("Using logits from node with wnid {}...".format(args.nbdt_node))
