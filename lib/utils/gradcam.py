@@ -116,8 +116,9 @@ class GradCAM(_BaseWrapper):
         B, C, H, W = gcam.shape
         view = gcam.view()
         view.shape = (B, -1)
-        gcam -= gcam.min(axis=1)
-        gcam /= gcam.max(axis=1)
+        view -= view.min(axis=1)
+        upper = view.max(axis=1)
+        view[upper != 0] /= upper[upper != 0][:, None]
         view.shape = (B, C, H, W)
         return view
 
