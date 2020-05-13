@@ -101,7 +101,7 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
         gradcam = alpha * cmap + (1 - alpha) * raw_image
     else:
         gradcam = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
-    cv2.imwrite(save_path, np.uint8(gradcam))
+    cv2.imwrite(save_path, np.uint8(gradcam), [cv2.IMWRITE_JPEG_QUALITY, 50])
 
 def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer, use_nbdt, nbdt_node_wnid):
     # TODO: put node in save path
