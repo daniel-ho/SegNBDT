@@ -95,7 +95,7 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
     np_save_path = save_path.replace('.jpg', '.npy')
     np.save(np_save_path, gradcam)
     gradcam = GradCAM.normalize_np(gradcam, minimum=minimum, maximum=maximum)[0,0]
-    cmap = cm.hot_r(gradcam)[..., :3] * 255.0
+    cmap = cm.hot(gradcam)[..., 2::-1] * 255.0
     if paper_cmap:
         alpha = gradcam[..., None]
         gradcam = alpha * cmap + (1 - alpha) * raw_image
@@ -231,7 +231,7 @@ def main():
 
             maximum = max(float(gradcam_region.max()), maximum)
             minimum = min(float(gradcam_region.min()), minimum)
-            logger.info(f'=> Bounds: ({LOWER}, {UPPER})')
+            logger.info(f'=> Bounds: ({minimum}, {maximum})')
 
             heatmaps.append(gradcam_region)
             save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
