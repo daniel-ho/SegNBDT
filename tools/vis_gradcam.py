@@ -89,12 +89,13 @@ def retrieve_raw_image(dataset, index):
                        cv2.IMREAD_COLOR)
     return image
 
-def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False):
+def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
+        minimum=None, maximum=None):
     gradcam = gradcam.cpu().numpy()
     np_save_path = save_path.replace('.jpg', '.npy')
     np.save(np_save_path, gradcam)
-    gradcam = GradCAM.normalize_np(gradcam)[0,0]
-    cmap = cm.jet_r(gradcam)[..., :3] * 255.0
+    gradcam = GradCAM.normalize_np(gradcam, minimum=minimum, maximum=maximum)[0,0]
+    cmap = cm.hot_r(gradcam)[..., :3] * 255.0
     if paper_cmap:
         alpha = gradcam[..., None]
         gradcam = alpha * cmap + (1 - alpha) * raw_image
@@ -207,6 +208,9 @@ def main():
         use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
     pred_probs, pred_labels = gradcam.forward(image)
 
+    maximum, minimum = -1000, 0
+    logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
+
     for pixel_i, pixel_j in pixels:
         assert pixel_i < test_size[0] and pixel_j < test_size[1], \
             "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
@@ -224,16 +228,23 @@ def main():
         raw_image = retrieve_raw_image(test_dataset, args.image_index)
         for layer in target_layers:
             gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
+
+            maximum = max(float(gradcam_region.max()), maximum)
+            minimum = min(float(gradcam_region.min()), minimum)
+            logger.info(f'=> Bounds: ({LOWER}, {UPPER})')
+
             heatmaps.append(gradcam_region)
             save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
-            save_gradcam(save_path, gradcam_region, raw_image)
+            save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
             save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, 'combined', config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, combined, raw_image)
+
+    logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
 
 if __name__ == '__main__':

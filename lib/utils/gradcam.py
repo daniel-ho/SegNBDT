@@ -112,13 +112,20 @@ class GradCAM(_BaseWrapper):
         return gcam
 
     @staticmethod
-    def normalize_np(gcam):
+    def normalize_np(gcam, maximum=None, minimum=None):
         B, C, H, W = gcam.shape
         view = gcam.view()
         view.shape = (B, -1)
-        view -= view.min(axis=1)
-        upper = view.max(axis=1)
-        view[upper != 0] /= upper[upper != 0][:, None]
+
+        lower = minimum or view.min(axis=1)
+        view -= lower
+
+        if maximum:
+            view /= (maximum - lower)
+        else:
+            upper = view.max(axis=1)
+            view[upper != 0] /= upper[upper != 0][:, None]
+
         view.shape = (B, C, H, W)
         return view
 
