@@ -24,7 +24,7 @@ import datasets
 from config import config
 from config import update_config
 from core.function import testval
-from utils.gradcam import SegGradCAM, SegNormGrad
+from utils.gradcam import SegGradCAM, SegNormGrad, GradCAM
 from utils.modelsummary import get_model_summary
 from utils.utils import create_logger
 
@@ -89,17 +89,19 @@ def retrieve_raw_image(dataset, index):
                        cv2.IMREAD_COLOR)
     return image
 
-def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False):
+def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
+        minimum=None, maximum=None):
     gradcam = gradcam.cpu().numpy()
-    np_save_path = save_path.replace('.png', '.npy')
+    np_save_path = save_path.replace('.jpg', '.npy')
     np.save(np_save_path, gradcam)
-    cmap = cm.jet_r(gradcam)[..., :3] * 255.0
+    gradcam = GradCAM.normalize_np(gradcam, minimum=minimum, maximum=maximum)[0,0]
+    cmap = cm.hot(gradcam)[..., 2::-1] * 255.0
     if paper_cmap:
         alpha = gradcam[..., None]
         gradcam = alpha * cmap + (1 - alpha) * raw_image
     else:
         gradcam = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
-    cv2.imwrite(save_path, np.uint8(gradcam))
+    cv2.imwrite(save_path, np.uint8(gradcam), [cv2.IMWRITE_JPEG_QUALITY, 50])
 
 def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer, use_nbdt, nbdt_node_wnid):
     # TODO: put node in save path
@@ -109,10 +111,10 @@ def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer, use_nbd
     if use_nbdt:
         save_path_args += [nbdt_node_wnid]
         save_path = os.path.join(output_dir,
-            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}-nbdt-{}.png'.format(vis_mode, *save_path_args))
+            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}-nbdt-{}.jpg'.format(vis_mode, *save_path_args))
     else:
         save_path = os.path.join(output_dir,
-            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.png'.format(vis_mode, *save_path_args))
+            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.jpg'.format(vis_mode, *save_path_args))
     return save_path
 
 def main():
@@ -199,20 +201,25 @@ def main():
         args.pixel_cartesian_product)
     logger.info(f'Running on {len(pixels)} pixels.')
 
+    # Run forward pass once, outside of loop
+    if config.NBDT.USE_NBDT:
+        logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
+    gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers,
+        use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
+    pred_probs, pred_labels = gradcam.forward(image)
+
+    maximum, minimum = -1000, 0
+    logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
+
     for pixel_i, pixel_j in pixels:
         assert pixel_i < test_size[0] and pixel_j < test_size[1], \
             "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
                 pixel_i,pixel_j,test_size[0],test_size[1])
 
-        # Run forward + backward passes
+        # Run backward pass
         # Note: Computes backprop wrt most likely predicted class rather than gt class
         gradcam_args = [args.image_index, pixel_i, pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
-        if config.NBDT.USE_NBDT:
-            logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
-        gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, 
-            use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
-        pred_probs, pred_labels = gradcam.forward(image)
         output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 
@@ -220,17 +227,24 @@ def main():
         heatmaps = []
         raw_image = retrieve_raw_image(test_dataset, args.image_index)
         for layer in target_layers:
-            gradcam_region = gradcam.generate(target_layer=layer)[0,0]
+            gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
+
+            maximum = max(float(gradcam_region.max()), maximum)
+            minimum = min(float(gradcam_region.min()), minimum)
+            logger.info(f'=> Bounds: ({minimum}, {maximum})')
+
             heatmaps.append(gradcam_region)
             save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
-            save_gradcam(save_path, gradcam_region, raw_image)
+            save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
             save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, 'combined', config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, combined, raw_image)
+
+    logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
 
 if __name__ == '__main__':
