@@ -24,7 +24,7 @@ import datasets
 from config import config
 from config import update_config
 from core.function import testval
-from utils.gradcam import SegGradCAM, SegNormGrad
+from utils.gradcam import SegGradCAM, SegNormGrad, GradCAM
 from utils.modelsummary import get_model_summary
 from utils.utils import create_logger
 
@@ -91,8 +91,9 @@ def retrieve_raw_image(dataset, index):
 
 def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False):
     gradcam = gradcam.cpu().numpy()
-    np_save_path = save_path.replace('.png', '.npy')
+    np_save_path = save_path.replace('.jpg', '.npy')
     np.save(np_save_path, gradcam)
+    gradcam = GradCAM.normalize(gradcam)
     cmap = cm.jet_r(gradcam)[..., :3] * 255.0
     if paper_cmap:
         alpha = gradcam[..., None]
@@ -109,10 +110,10 @@ def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer, use_nbd
     if use_nbdt:
         save_path_args += [nbdt_node_wnid]
         save_path = os.path.join(output_dir,
-            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}-nbdt-{}.png'.format(vis_mode, *save_path_args))
+            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}-nbdt-{}.jpg'.format(vis_mode, *save_path_args))
     else:
         save_path = os.path.join(output_dir,
-            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.png'.format(vis_mode, *save_path_args))
+            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.jpg'.format(vis_mode, *save_path_args))
     return save_path
 
 def main():
@@ -210,7 +211,7 @@ def main():
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
         if config.NBDT.USE_NBDT:
             logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
-        gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers, 
+        gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers,
             use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
         pred_probs, pred_labels = gradcam.forward(image)
         output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
@@ -220,7 +221,7 @@ def main():
         heatmaps = []
         raw_image = retrieve_raw_image(test_dataset, args.image_index)
         for layer in target_layers:
-            gradcam_region = gradcam.generate(target_layer=layer)[0,0]
+            gradcam_region = gradcam.generate(target_layer=layer, normalize=False)[0,0]
             heatmaps.append(gradcam_region)
             save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))

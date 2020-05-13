@@ -102,7 +102,16 @@ class GradCAM(_BaseWrapper):
         else:
             raise ValueError("Invalid layer name: {}".format(target_layer))
 
-    def generate(self, target_layer):
+    @staticmethod
+    def normalize(x):
+        B, C, H, W = gcam.shape
+        gcam = gcam.view(B, -1)
+        gcam -= gcam.min(dim=1, keepdim=True)[0]
+        gcam /= gcam.max(dim=1, keepdim=True)[0]
+        gcam = gcam.view(B, C, H, W)
+        return gcam
+
+    def generate(self, target_layer, normalize=True):
         fmaps = self._find(self.fmap_pool, target_layer)
         grads = self._find(self.grad_pool, target_layer)
         weights = F.adaptive_avg_pool2d(grads, 1)
@@ -113,12 +122,8 @@ class GradCAM(_BaseWrapper):
             gcam, self.image_shape, mode="bilinear", align_corners=False
         )
 
-        B, C, H, W = gcam.shape
-        gcam = gcam.view(B, -1)
-        gcam -= gcam.min(dim=1, keepdim=True)[0]
-        gcam /= gcam.max(dim=1, keepdim=True)[0]
-        gcam = gcam.view(B, C, H, W)
-
+        if normalize:
+            gcam = GradCAM.normalize(gcam)
         return gcam
 
 
@@ -152,12 +157,8 @@ class SegGradCAM(_SegBaseWrapper, GradCAM):
             gcam, self.image_shape, mode="bilinear", align_corners=False
         )
 
-        B, C, H, W = gcam.shape
-        gcam = gcam.view(B, -1)
-        gcam -= gcam.min(dim=1, keepdim=True)[0]
-        gcam /= gcam.max(dim=1, keepdim=True)[0]
-        gcam = gcam.view(B, C, H, W)
-
+        if normalize:
+            gcam = GradCAM.normalize(gcam)
         return gcam
 
 
@@ -176,10 +177,6 @@ class SegNormGrad(_SegBaseWrapper, GradCAM):
             gcam, self.image_shape, mode="bilinear", align_corners=False
         )
 
-        B, C, H, W = gcam.shape
-        gcam = gcam.view(B, -1)
-        gcam -= gcam.min(dim=1, keepdim=True)[0]
-        gcam /= gcam.max(dim=1, keepdim=True)[0]
-        gcam = gcam.view(B, C, H, W)
-
+        if normalize:
+            gcam = GradCAM.normalize(gcam)
         return gcam
