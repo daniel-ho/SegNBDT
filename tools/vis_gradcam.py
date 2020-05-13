@@ -235,9 +235,6 @@ def main():
             logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, combined, raw_image)
 
-        # forcibly free retained graph
-        del gradcam.logits
-
 
 if __name__ == '__main__':
     main()
