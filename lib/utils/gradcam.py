@@ -103,13 +103,24 @@ class GradCAM(_BaseWrapper):
             raise ValueError("Invalid layer name: {}".format(target_layer))
 
     @staticmethod
-    def normalize(x):
+    def normalize(gcam):
         B, C, H, W = gcam.shape
         gcam = gcam.view(B, -1)
         gcam -= gcam.min(dim=1, keepdim=True)[0]
         gcam /= gcam.max(dim=1, keepdim=True)[0]
         gcam = gcam.view(B, C, H, W)
         return gcam
+
+    @staticmethod
+    def normalize_np(gcam):
+        B, C, H, W = gcam.shape
+
+        view = gcam.view()
+        view.shape = (B, -1)
+        gcam -= gcam.min(dim=1, keepdim=True)[0]
+        gcam /= gcam.max(dim=1, keepdim=True)[0]
+        view.shape = (B, C, H, W)
+        return view
 
     def generate(self, target_layer, normalize=True):
         fmaps = self._find(self.fmap_pool, target_layer)
