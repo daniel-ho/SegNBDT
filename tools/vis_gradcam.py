@@ -200,20 +200,22 @@ def main():
         args.pixel_cartesian_product)
     logger.info(f'Running on {len(pixels)} pixels.')
 
+    # Run forward pass once, outside of loop
+    if config.NBDT.USE_NBDT:
+        logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
+    gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers,
+        use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
+    pred_probs, pred_labels = gradcam.forward(image)
+
     for pixel_i, pixel_j in pixels:
         assert pixel_i < test_size[0] and pixel_j < test_size[1], \
             "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
                 pixel_i,pixel_j,test_size[0],test_size[1])
 
-        # Run forward + backward passes
+        # Run backward pass
         # Note: Computes backprop wrt most likely predicted class rather than gt class
         gradcam_args = [args.image_index, pixel_i, pixel_j]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
-        if config.NBDT.USE_NBDT:
-            logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
-        gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers,
-            use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
-        pred_probs, pred_labels = gradcam.forward(image)
         output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 

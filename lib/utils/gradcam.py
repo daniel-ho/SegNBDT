@@ -146,7 +146,7 @@ class _SegBaseWrapper(_BaseWrapper):
 
 class SegGradCAM(_SegBaseWrapper, GradCAM):
 
-    def generate(self, target_layer):
+    def generate(self, target_layer, normalize=True):
         fmaps = self._find(self.fmap_pool, target_layer)
         grads = self._find(self.grad_pool, target_layer)
         weights = grads
@@ -164,7 +164,7 @@ class SegGradCAM(_SegBaseWrapper, GradCAM):
 
 class SegNormGrad(_SegBaseWrapper, GradCAM):
 
-    def generate(self, target_layer):
+    def generate(self, target_layer, normalize=True):
         fmaps = self._find(self.fmap_pool, target_layer)
         grads = self._find(self.grad_pool, target_layer)
 
