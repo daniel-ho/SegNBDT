@@ -47,7 +47,8 @@ class ADE20K(BaseDataset):
     def read_files(self):
         files = []
         for item in self.img_list:
-            image_path, label_path = item['fpath_img'], item['fpath_segm']
+            image_path = item['fpath_img'].replace('ADEChallengeData2016', 'ade20k')
+            label_path = item['fpath_segm'].replace('ADEChallengeData2016', 'ade20k')
             name = os.path.splitext(os.path.basename(image_path))[0]
             files.append({
                 'img': image_path,
