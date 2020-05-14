@@ -32,6 +32,7 @@ class ADE20K(BaseDataset):
         self.root = root
         self.list_path = list_path
         self.num_classes = num_classes
+        self.class_weights = None
 
         self.multi_scale = multi_scale
         self.flip = flip
