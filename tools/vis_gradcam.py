@@ -126,6 +126,30 @@ def generate_fname(order=('mode', 'image', 'pixel_i', 'pixel_j', 'layer'), **kwa
         parts.append(f'{key}-{kwargs.pop(key)}')
     return '-'.join(parts)
 
+def generate_and_save_saliency(
+        test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
+        config):
+    # Generate GradCAM + save heatmap
+    heatmaps = []
+    raw_image = retrieve_raw_image(test_dataset, args.image_index)
+    for layer in target_layers:
+        gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
+
+        maximum = max(float(gradcam_region.max()), maximum)
+        minimum = min(float(gradcam_region.min()), minimum)
+        logger.info(f'=> Bounds: ({minimum}, {maximum})')
+
+        heatmaps.append(gradcam_region)
+        save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+        logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
+        save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum)
+    if len(heatmaps) > 1:
+        combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
+        combined /= combined.max()
+        save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, 'combined', config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+        logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
+        save_gradcam(save_path, combined, raw_image)
+
 def main():
     args = parse_args()
 
@@ -232,26 +256,9 @@ def main():
         output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 
-        # Generate GradCAM + save heatmap
-        heatmaps = []
-        raw_image = retrieve_raw_image(test_dataset, args.image_index)
-        for layer in target_layers:
-            gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
-
-            maximum = max(float(gradcam_region.max()), maximum)
-            minimum = min(float(gradcam_region.min()), minimum)
-            logger.info(f'=> Bounds: ({minimum}, {maximum})')
-
-            heatmaps.append(gradcam_region)
-            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
-            logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
-            save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum)
-        if len(heatmaps) > 1:
-            combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
-            combined /= combined.max()
-            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, 'combined', config.NBDT.USE_NBDT, args.nbdt_node_wnid)
-            logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
-            save_gradcam(save_path, combined, raw_image)
+        generate_and_save_saliency(
+            test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
+            config)
 
     logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
