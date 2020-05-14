@@ -121,6 +121,8 @@ def generate_save_path(output_dir, vis_mode, gradcam_kwargs, target_layer, use_n
 def generate_fname(order=('mode', 'image', 'pixel_i', 'pixel_j', 'layer'), **kwargs):
     parts = []
     for key in order:
+        if key not in kwargs:
+            continue
         parts.append(f'{key}-{kwargs.pop(key)}')
     for key in sorted(kwargs):
         parts.append(f'{key}-{kwargs.pop(key)}')
@@ -237,12 +239,21 @@ def main():
     # Run forward pass once, outside of loop
     if config.NBDT.USE_NBDT:
         logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
-    gradcam = eval('Seg'+args.vis_mode)(model=model, candidate_layers=target_layers,
+    Saliency = eval('Seg'+args.vis_mode)   # change to dict?
+    gradcam = Saliency(model=model, candidate_layers=target_layers,
         use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
     pred_probs, pred_labels = gradcam.forward(image)
 
     maximum, minimum = -1000, 0
     logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
+
+    if getattr(Saliency, 'whole_image', False):
+        gradcam_kwargs = {'image': args.image_index, 'suffix': args.suffix}
+        gradcam.backward(pred_labels[:,[0],:,:])
+
+        generate_and_save_saliency(
+            test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
+            config)
 
     for pixel_i, pixel_j in pixels:
         assert pixel_i < test_size[0] and pixel_j < test_size[1], \
