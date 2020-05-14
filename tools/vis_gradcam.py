@@ -24,7 +24,8 @@ import datasets
 from config import config
 from config import update_config
 from core.function import testval
-from utils.gradcam import SegGradCAM, SegNormGrad, GradCAM
+from utils.gradcam import SegGradCAM, SegNormGrad, GradCAM, SegGradCAMWhole, \
+    SegNormGradWhole
 from utils.modelsummary import get_model_summary
 from utils.utils import create_logger
 
