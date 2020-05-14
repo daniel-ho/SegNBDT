@@ -123,7 +123,7 @@ def generate_fname(order=('mode', 'image', 'pixel_i', 'pixel_j', 'layer'), **kwa
         parts.append(f'{key}-{kwargs.pop(key)}')
     for key in sorted(kwargs):
         parts.append(f'{key}-{kwargs.pop(key)}')
-    return '-'.join(string)
+    return '-'.join(parts)
 
 def main():
     args = parse_args()
