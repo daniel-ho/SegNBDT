@@ -50,6 +50,8 @@ def parse_args():
     parser.add_argument('--pixel-cartesian-product', action='store_true',
                         help='Compute cartesian product between all is and js '
                              'for the full list of pixels.')
+    parser.add_argument('--suffix', default='',
+                        help='Appended to each image filename.')
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
     parser.add_argument('--nbdt-node-wnid', type=str, default='',
@@ -111,10 +113,10 @@ def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer, use_nbd
     if use_nbdt:
         save_path_args += [nbdt_node_wnid]
         save_path = os.path.join(output_dir,
-            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}-nbdt-{}.jpg'.format(vis_mode, *save_path_args))
+            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}-nbdt-{}{}.jpg'.format(vis_mode, *save_path_args))
     else:
         save_path = os.path.join(output_dir,
-            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.jpg'.format(vis_mode, *save_path_args))
+            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}{}.jpg'.format(vis_mode, *save_path_args))
     return save_path
 
 def main():
@@ -218,7 +220,7 @@ def main():
 
         # Run backward pass
         # Note: Computes backprop wrt most likely predicted class rather than gt class
-        gradcam_args = [args.image_index, pixel_i, pixel_j]
+        gradcam_args = [args.image_index, pixel_i, pixel_j, args.suffix]
         logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
         output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
