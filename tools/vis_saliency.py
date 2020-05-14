@@ -54,10 +54,13 @@ for name in dirs:
     for path in glob.iglob(os.path.join(name, 'images/*')):
         fname = os.path.splitext(os.path.basename(path))[0]
         parts = fname.split('-')
+
+        i_index = parts.index('pixel_i') + 1
+        j_index = parts.index('pixel_j') + 1
         paths.append({
             'src': path.replace(f'{name}/', ''),
-            'i': int(parts[4]),
-            'j': int(parts[6])
+            'i': int(parts[i_index]),
+            'j': int(parts[j_index])
         })
 
     js = f'var step = {args.step};'
