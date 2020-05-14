@@ -75,7 +75,7 @@ class ADE20K(BaseDataset):
         label = cv2.imread(os.path.join(self.root, item['label']), cv2.IMREAD_GRAYSCALE)
         label = self.convert_label(label)
 
-        image, label = resize_image_label(image, label, self.base_size)
+        image, label = self.resize_image_label(image, label, self.base_size)
 
         if 'validation' in self.list_path:
             image = self.input_transform(image)
