@@ -50,6 +50,8 @@ def parse_args():
     parser.add_argument('--pixel-cartesian-product', action='store_true',
                         help='Compute cartesian product between all is and js '
                              'for the full list of pixels.')
+    parser.add_argument('--suffix', default='',
+                        help='Appended to each image filename.')
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
     parser.add_argument('--nbdt-node-wnid', type=str, default='',
@@ -103,19 +105,25 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
         gradcam = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
     cv2.imwrite(save_path, np.uint8(gradcam), [cv2.IMWRITE_JPEG_QUALITY, 50])
 
-def generate_save_path(output_dir, vis_mode, gradcam_args, target_layer, use_nbdt, nbdt_node_wnid):
+def generate_save_path(output_dir, vis_mode, gradcam_kwargs, target_layer, use_nbdt, nbdt_node_wnid, suffix=''):
     # TODO: put node in save path
     vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
-    save_path_args = gradcam_args + [target_layer]
+    save_path_args = gradcam_kwargs.copy()
+    save_path_args['layer'] = target_layer
+    save_path_args['mode'] = vis_mode
     if use_nbdt:
-        save_path_args += [nbdt_node_wnid]
-        save_path = os.path.join(output_dir,
-            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}-nbdt-{}.jpg'.format(vis_mode, *save_path_args))
-    else:
-        save_path = os.path.join(output_dir,
-            '{}-image-{}-pixel_i-{}-pixel_j-{}-layer-{}.jpg'.format(vis_mode, *save_path_args))
+        save_path_args['node'] = nbdt_node_wnid
+    save_path = os.path.join(output_dir, f'{generate_fname(**save_path_args)}.jpg')
     return save_path
+
+def generate_fname(order=('mode', 'image', 'pixel_i', 'pixel_j', 'layer'), **kwargs):
+    parts = []
+    for key in order:
+        parts.append(f'{key}-{kwargs.pop(key)}')
+    for key in sorted(kwargs):
+        parts.append(f'{key}-{kwargs.pop(key)}')
+    return '-'.join(parts)
 
 def main():
     args = parse_args()
@@ -218,8 +226,8 @@ def main():
 
         # Run backward pass
         # Note: Computes backprop wrt most likely predicted class rather than gt class
-        gradcam_args = [args.image_index, pixel_i, pixel_j]
-        logger.info('Running {} on image {} at pixel ({},{})...'.format(args.vis_mode, *gradcam_args))
+        gradcam_kwargs = {'image': args.image_index, 'pixel_i': pixel_i, 'pixel_j': pixel_j, 'suffix': args.suffix}
+        logger.info(f'Running {args.vis_mode} on image {args.image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
         output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 
@@ -234,13 +242,13 @@ def main():
             logger.info(f'=> Bounds: ({minimum}, {maximum})')
 
             heatmaps.append(gradcam_region)
-            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
-            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_args, 'combined', config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, 'combined', config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, combined, raw_image)
 
