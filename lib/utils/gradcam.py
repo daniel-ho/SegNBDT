@@ -198,3 +198,26 @@ class SegNormGrad(_SegBaseWrapper, GradCAM):
         if normalize:
             gcam = GradCAM.normalize(gcam)
         return gcam
+
+
+class _SegWholeWrapper(_SegBaseWrapper):
+    """
+    This looks weird (like a dup of _BaseWrapper), but it's actually needed
+    to resolve MRO issues
+    """
+
+    def _encode_one_hot(self, labels):
+        return super(_SegBaseWrapper, self)._encode_one_hot(labels)
+
+    def backward(self, labels):
+        return super(_SegBaseWrapper, self).backward(labels)
+
+
+class SegGradCAMWhole(_SegWholeWrapper, SegGradCAM):
+
+    whole_image = True
+
+
+class SegNormGradWhole(_SegWholeWrapper, SegNormGrad):
+
+    whole_image = True
