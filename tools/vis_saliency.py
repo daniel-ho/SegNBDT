@@ -1,4 +1,4 @@
-"""Generates HTML visualization.
+"""Generates interactive HTML visualization.
 
 In this visualization, your cursor position is discretized to a 50x50 bin, and
 the corresponding image is shown.
@@ -20,7 +20,7 @@ Here is the script we used to produce saliency maps:
     # multiple runs of 200 passes each :P
     for method in NormGrad GradCAM;
     do
-        for i in 0 200 400 600 800 1000 1200 1400 1600 1800 2000;
+        for i in {0..2000..200};
         do CUDA_VISIBLE_DEVICES=4 python tools/vis_gradcam.py \
             --cfg experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024.yaml \
             --vis-mode ${method} \
@@ -37,16 +37,27 @@ Here is the script we used to produce saliency maps:
 import glob
 from jinja2 import Template
 import random
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('name')
+parser.add_argument('--step', type=int, default=50,
+    help='Pixels between each visualized pixel.')
+parser.add_argument('--out', default='output/interactive', help='Name of out dir')
+args = parser.parse_args()
 
 paths = []
-for path in glob.iglob('./images/*'):
-    parts = path.split('-')
+for path in glob.iglob(f'./{args.name}/*'):
+    fname = os.path.splitext(os.path.basename(path))[0]
+    parts = fname.split('-')
     paths.append({
         'src': path,
         'i': int(parts[4]),
         'j': int(parts[6])
     })
 
+js = f'var step = {args.step};'
 template = Template('''
 <html>
   <head>
@@ -82,8 +93,8 @@ var width = $('html').width();
 var ratio = width / imgWidth;
 
 $('html').mousemove(function (e) {
-    var j = Math.round(e.pageX / 50 / ratio) * 50;
-    var i = Math.round(e.pageY / 50 / ratio) * 50;
+    var j = Math.round(e.pageX / step / ratio) * step;
+    var i = Math.round(e.pageY / step / ratio) * step;
 
     var target = $('img[i=' + i + '][j=' + j + ']');
     if (target.length > 0) {
@@ -93,11 +104,13 @@ $('html').mousemove(function (e) {
 
     console.log(i, j);
 });
+''' + js + '''
     </script>
   </body>
 </html>
 ''')
 
 html = template.render(paths=paths, random=random.random())
-with open('index.html', 'w') as f:
+os.makedirs(args.out, exist_ok=True)
+with open(os.path.join(args.out, f'index-{args.name}.html'), 'w') as f:
     f.write(html)
