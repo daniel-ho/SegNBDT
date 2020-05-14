@@ -117,13 +117,13 @@ def generate_save_path(output_dir, vis_mode, gradcam_kwargs, target_layer, use_n
     save_path = os.path.join(output_dir, f'{generate_fname(**save_path_args)}.jpg')
     return save_path
 
-def generate_fname(**kwargs, order=('mode', 'image', 'pixel_i', 'pixel_j', 'layer')):
-    string = ''
+def generate_fname(order=('mode', 'image', 'pixel_i', 'pixel_j', 'layer'), **kwargs):
+    parts = []
     for key in order:
-        string += f'{key}-{kwargs.pop(key)}'
+        parts.append(f'{key}-{kwargs.pop(key)}')
     for key in sorted(kwargs):
-        string += f'{key}-{kwargs.pop(key)}'
-    return string
+        parts.append(f'{key}-{kwargs.pop(key)}')
+    return '-'.join(string)
 
 def main():
     args = parse_args()
