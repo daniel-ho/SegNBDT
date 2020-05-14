@@ -200,17 +200,17 @@ class SegNormGrad(_SegBaseWrapper, GradCAM):
         return gcam
 
 
-class _SegWholeWrapper:
+class _SegWholeWrapper(_SegBaseWrapper):
     """
     This looks weird (like a dup of _BaseWrapper), but it's actually needed
     to resolve MRO issues
     """
 
     def _encode_one_hot(self, labels):
-        return super(_BaseWrapper, self)._encode_one_hot(labels)
+        return super(_SegBaseWrapper, self)._encode_one_hot(labels)
 
     def backward(self, labels):
-        return super(_BaseWrapper, self).backward(labels)
+        return super(_SegBaseWrapper, self).backward(labels)
 
 
 class SegGradCAMWhole(_SegWholeWrapper, SegGradCAM):

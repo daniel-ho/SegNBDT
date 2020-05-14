@@ -131,7 +131,7 @@ def generate_fname(order=('mode', 'image', 'pixel_i', 'pixel_j', 'layer'), **kwa
 
 def generate_and_save_saliency(
         test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
-        config):
+        config, gradcam):
     # Generate GradCAM + save heatmap
     heatmaps = []
     raw_image = retrieve_raw_image(test_dataset, args.image_index)
@@ -254,7 +254,7 @@ def main():
 
         generate_and_save_saliency(
             test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
-            config)
+            config, gradcam)
         return
 
     pixels = get_pixels(
@@ -276,7 +276,7 @@ def main():
 
         generate_and_save_saliency(
             test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
-            config)
+            config, gradcam)
 
     logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
