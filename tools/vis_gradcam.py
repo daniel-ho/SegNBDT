@@ -233,6 +233,9 @@ def main():
             minimum = min(float(gradcam_region.min()), minimum)
             logger.info(f'=> Bounds: ({minimum}, {maximum})')
 
+            gradcam_kwargs['max'] = float('%.3g' % maximum)
+            gradcam_kwargs['min'] = float('%.3g' % minimum)
+
             heatmaps.append(gradcam_region)
             save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
@@ -250,12 +253,12 @@ def main():
                 or args.pixel_j_range), \
             'the "Whole" saliency method generates one map for the whole ' \
             'image, not for specific pixels'
-        gradcam_kwargs = {'image': args.image_index, 'suffix': args.suffix}
+        gradcam_kwargs = {'image': args.image_index}
+        if args.suffix:
+            gradcam_kwargs['suffix'] = args.suffix
         gradcam.backward(pred_labels[:,[0],:,:])
 
-        generate_and_save_saliency(
-            test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
-            config, gradcam)
+        generate_and_save_saliency()
         return
 
     pixels = get_pixels(
@@ -270,14 +273,14 @@ def main():
 
         # Run backward pass
         # Note: Computes backprop wrt most likely predicted class rather than gt class
-        gradcam_kwargs = {'image': args.image_index, 'pixel_i': pixel_i, 'pixel_j': pixel_j, 'suffix': args.suffix}
+        gradcam_kwargs = {'image': args.image_index, 'pixel_i': pixel_i, 'pixel_j': pixel_j}
+        if args.suffix:
+            gradcam_kwargs['suffix'] = args.suffix
         logger.info(f'Running {args.vis_mode} on image {args.image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
         output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
         gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 
-        generate_and_save_saliency(
-            test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
-            config, gradcam)
+        generate_and_save_saliency()
 
     logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
