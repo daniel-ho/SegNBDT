@@ -200,11 +200,11 @@ class SegNormGrad(_SegBaseWrapper, GradCAM):
         return gcam
 
 
-class SegGradCAMWhole(_BaseWrapper, SegGradCAM):
+class SegGradCAMWhole(SegGradCAM, _BaseWrapper):
 
     whole_image = True
 
 
-class SegNormGradWhole(_BaseWrapper, SegNormGrad):
+class SegNormGradWhole(SegNormGrad, _BaseWrapper):
 
     whole_image = True

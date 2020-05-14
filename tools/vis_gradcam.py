@@ -231,11 +231,6 @@ def main():
     if config.NBDT.USE_NBDT:
         target_layers = ['model.' + layer for layer in target_layers]
 
-    pixels = get_pixels(
-        args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
-        args.pixel_cartesian_product)
-    logger.info(f'Running on {len(pixels)} pixels.')
-
     # Run forward pass once, outside of loop
     if config.NBDT.USE_NBDT:
         logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
@@ -248,12 +243,23 @@ def main():
     logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
 
     if getattr(Saliency, 'whole_image', False):
+        assert not (
+                args.pixel_i or args.pixel_j or args.pixel_i_range
+                or args.pixel_j_range), \
+            'the "Whole" saliency method generates one map for the whole ' \
+            'image, not for specific pixels'
         gradcam_kwargs = {'image': args.image_index, 'suffix': args.suffix}
         gradcam.backward(pred_labels[:,[0],:,:])
 
         generate_and_save_saliency(
             test_dataset, args, target_layers, final_output_dir, gradcam_kwargs,
             config)
+        return
+
+    pixels = get_pixels(
+        args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
+        args.pixel_cartesian_product)
+    logger.info(f'Running on {len(pixels)} pixels.')
 
     for pixel_i, pixel_j in pixels:
         assert pixel_i < test_size[0] and pixel_j < test_size[1], \
