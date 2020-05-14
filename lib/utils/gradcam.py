@@ -198,3 +198,11 @@ class SegNormGrad(_SegBaseWrapper, GradCAM):
         if normalize:
             gcam = GradCAM.normalize(gcam)
         return gcam
+
+
+class SegGradCAMWhole(_BaseWrapper, SegGradCAM):
+    pass
+
+
+class SegNormGradWhole(_BaseWrapper, SegNormGrad):
+    pass
