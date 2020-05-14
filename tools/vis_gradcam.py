@@ -234,7 +234,6 @@ def main():
             logger.info(f'=> Bounds: ({minimum}, {maximum})')
 
             gradcam_kwargs['max'] = float('%.3g' % maximum)
-            gradcam_kwargs['min'] = float('%.3g' % minimum)
 
             heatmaps.append(gradcam_region)
             save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
