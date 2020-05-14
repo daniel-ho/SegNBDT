@@ -37,7 +37,7 @@ class ADE20K(BaseDataset):
         self.flip = flip
         self.center_crop_test = center_crop_test
 
-        self.img_list = [json.loads(x.rstrip()) for x in open(self.list_path, 'r')]
+        self.img_list = [json.loads(x.rstrip()) for x in open(root+list_path, 'r')]
 
         self.files = self.read_files()
         if num_samples:
