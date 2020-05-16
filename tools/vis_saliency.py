@@ -41,76 +41,86 @@ import argparse
 import os
 
 parser = argparse.ArgumentParser()
-parser.add_argument('name')
+parser.add_argument('name', nargs='*', default='.')
 parser.add_argument('--step', type=int, default=50,
     help='Pixels between each visualized pixel.')
-parser.add_argument('--out', default='output/interactive', help='Name of out dir')
 args = parser.parse_args()
 
-paths = []
-for path in glob.iglob(f'./{args.name}/*'):
-    fname = os.path.splitext(os.path.basename(path))[0]
-    parts = fname.split('-')
-    paths.append({
-        'src': path,
-        'i': int(parts[4]),
-        'j': int(parts[6])
-    })
+dirs = [name for name in args.name if os.path.isdir(name)]
+print(f'List of valid dirs: {dirs}')
 
-js = f'var step = {args.step};'
-template = Template('''
-<html>
-  <head>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<style>
-body, html {
-  padding:0;
-  margin:0;
-}
-body, html, .img-container {
-  display:flex;
-}
-.img-container img {
-  width:100%;
-}
-body {
-  flex-direction:column;
-}
-</style>
-  </head>
-  <body>
+for name in dirs:
+    paths = []
+    for path in glob.iglob(os.path.join(name, 'images/*')):
+        fname = os.path.splitext(os.path.basename(path))[0]
+        parts = fname.split('-')
 
-  {% for path in paths %}
-  <div class="img-container">
-    <img src="{{ path['src'] }}" i={{ path['i'] }} j={{ path['j'] }}>
-  </div>
-  {% endfor %}
-    <script>
-$('img').hide();
+        i_index = parts.index('pixel_i') + 1
+        j_index = parts.index('pixel_j') + 1
+        paths.append({
+            'src': path.replace(f'{name}/', ''),
+            'i': int(parts[i_index]),
+            'j': int(parts[j_index])
+        })
 
-var imgWidth = 2048;
-var width = $('html').width();
-var ratio = width / imgWidth;
-
-$('html').mousemove(function (e) {
-    var j = Math.round(e.pageX / step / ratio) * step;
-    var i = Math.round(e.pageY / step / ratio) * step;
-
-    var target = $('img[i=' + i + '][j=' + j + ']');
-    if (target.length > 0) {
-      $('img').hide();
-      $('img[i=' + i + '][j=' + j + ']').show();
+    js = f'var step = {args.step};'
+    template = Template('''
+    <html>
+      <head>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <style>
+    body, html {
+      padding:0;
+      margin:0;
     }
+    body, html, .img-container {
+      display:flex;
+    }
+    .img-container img {
+      width:100%;
+    }
+    body {
+      flex-direction:column;
+    }
+    </style>
+      </head>
+      <body>
 
-    console.log(i, j);
-});
-''' + js + '''
-    </script>
-  </body>
-</html>
-''')
+      {% for path in paths %}
+      <div class="img-container">
+        <img src="{{ path['src'] }}" i={{ path['i'] }} j={{ path['j'] }}>
+      </div>
+      {% endfor %}
+        <script>
+    $('img').hide();
 
-html = template.render(paths=paths, random=random.random())
-os.makedirs(args.out, exist_ok=True)
-with open(os.path.join(args.out, f'index-{args.name}.html'), 'w') as f:
-    f.write(html)
+    var imgWidth = 2048;
+    var width = $('html').width();
+    var ratio = width / imgWidth;
+
+    $('html').mousemove(function (e) {
+        var j = Math.round(e.pageX / step / ratio) * step;
+        var i = Math.round(e.pageY / step / ratio) * step;
+
+        var target = $('img[i=' + i + '][j=' + j + ']');
+        if (target.length > 0) {
+          $('img').hide();
+          $('img[i=' + i + '][j=' + j + ']').show();
+        }
+
+        console.log(i, j);
+    });
+    ''' + js + '''
+        </script>
+      </body>
+    </html>
+    ''')
+
+    html = template.render(paths=paths, random=random.random())
+    with open(os.path.join(name, 'index.html'), 'w') as f:
+        f.write(html)
+
+if '.' not in dirs:
+    with open('index.html', 'w') as f:
+        html = [f'<a href="{name}/">{name}/</a><br/>' for name in dirs]
+        f.write(''.join(html))
