@@ -157,7 +157,9 @@ def save_overlap(save_path_overlap, save_path_plot, gradcam, label, k=5):
     np.save(save_path_overlap, overlap)
 
     plt.figure()
+    plt.title('Average saliency per class')
     plt.barh(max_labels, max_values)
+    plt.xlabel('Average Pixel Normalized Saliency')
     plt.savefig(save_path_plot)
 
 def main():
