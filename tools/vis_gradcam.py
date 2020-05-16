@@ -118,7 +118,7 @@ def generate_output_dir(output_dir, vis_mode, target_layer, use_nbdt, nbdt_node_
     vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
 
-    dir = f'{mode}_{target_layer}'
+    dir = f'{vis_mode}_{target_layer}'
     if use_nbdt:
         dir += f'_{nbdt_node_wnid}'
     os.makedirs(dir, exist_ok=True)
@@ -131,6 +131,7 @@ def generate_save_path(output_dir, gradcam_kwargs, suffix='', ext='jpg'):
 
 def generate_fname(kwargs, order=('image', 'pixel_i', 'pixel_j')):
     parts = []
+    kwargs = kwargs.copy()
     for key in order:
         if key not in kwargs:
             continue
@@ -139,14 +140,14 @@ def generate_fname(kwargs, order=('image', 'pixel_i', 'pixel_j')):
         parts.append(f'{key}-{kwargs.pop(key)}')
     return '-'.join(parts)
 
-def compute_overlap(label, gradcam_region):
+def compute_overlap(label, gradcam):
     cls_to_mass = {}
-    for cls in map(int, np.unique(label.data.numpy())):
-        cls_to_mass[cls] = np.sum(gradcam_region[label == cls])
+    for cls in map(int, np.unique(label.tolist())):
+        cls_to_mass[cls] = gradcam[0,0][label == cls].sum()
     return cls_to_mass
 
 def save_overlap(save_path, gradcam, label, k=5):
-    overlap = compute_overlap(label, gradcam_region)
+    overlap = compute_overlap(label, gradcam)
     max_keys = list(sorted(overlap, key=lambda key: overlap[key]))[:k]
     max_labels = [class_names[key] for key in max_keys]
     max_values = [overlap[key] for key in max_keys]
@@ -217,7 +218,7 @@ def main():
                         base_size=config.TEST.BASE_SIZE,
                         crop_size=test_size,
                         downsample_rate=1)
-    image,_,_,name = test_dataset[args.image_index]
+    image, label, _, name = test_dataset[args.image_index]
     image = torch.from_numpy(image).unsqueeze(0).to(device)
     logger.info("Using image {}...".format(name))
 
@@ -262,14 +263,17 @@ def main():
             gradcam_kwargs['max'] = float('%.3g' % maximum)
 
             heatmaps.append(gradcam_region)
-            final_output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
-            save_path = generate_save_path(final_output_dir, gradcam_kwargs)
+            output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+            save_path = generate_save_path(output_dir, gradcam_kwargs)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum)
 
-            final_output_dir += '_overlap'
-            save_path = generate_save_path(final_output_dir, gradcam_kwargs, ext='npy')
-            logger.info('Saving {} overlap at {}...'.format(args.vis_mode, save_path))
+            output_dir += '_overlap'
+            os.makedirs(output_dir, exist_ok=True)
+            save_path = generate_save_path(output_dir, gradcam_kwargs, ext='npy')
+            logger.info('Saving {} overlap data at {}...'.format(args.vis_mode, save_path))
+            save_path = generate_save_path(output_dir, gradcam_kwargs, ext='jpg')
+            logger.info('Saving {} overlap plot at {}...'.format(args.vis_mode, save_path))
             save_overlap(save_path, gradcam_region, label)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
