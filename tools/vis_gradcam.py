@@ -142,22 +142,22 @@ def generate_fname(kwargs, order=('image', 'pixel_i', 'pixel_j')):
 
 def compute_overlap(label, gradcam):
     cls_to_mass = {}
-    gradcam = GradCAM.normalize(gradcam.data.numpy())[0,0]
+    gradcam = GradCAM.normalize(gradcam)[0,0]
     gradcam /= gradcam.sum()
     for cls in map(int, np.unique(label.tolist())):
         cls_to_mass[cls] = gradcam[label == cls].sum()
     return cls_to_mass
 
-def save_overlap(save_path, gradcam, label, k=5):
+def save_overlap(save_path_overlap, save_path_plot, gradcam, label, k=5):
     overlap = compute_overlap(label, gradcam)
     max_keys = list(sorted(overlap, key=lambda key: overlap[key]))[:k]
     max_labels = [class_names[key] for key in max_keys]
     max_values = [overlap[key] for key in max_keys]
-    np.save(save_path, overlap)
-    plt.barh(max_labels, max_values)
+    np.save(save_path_overlap, overlap)
 
-    save_path = save_path.replace('.npy', '.jpg')
-    plt.savefig(save_path)
+    plt.figure()
+    plt.barh(max_labels, max_values)
+    plt.savefig(save_path_plot)
 
 def main():
     args = parse_args()
@@ -272,11 +272,11 @@ def main():
 
             output_dir += '_overlap'
             os.makedirs(output_dir, exist_ok=True)
-            save_path = generate_save_path(output_dir, gradcam_kwargs, ext='npy')
-            logger.info('Saving {} overlap data at {}...'.format(args.vis_mode, save_path))
-            save_path = generate_save_path(output_dir, gradcam_kwargs, ext='jpg')
-            logger.info('Saving {} overlap plot at {}...'.format(args.vis_mode, save_path))
-            save_overlap(save_path, gradcam_region, label)
+            save_path_overlap = generate_save_path(output_dir, gradcam_kwargs, ext='npy')
+            save_path_plot = generate_save_path(output_dir, gradcam_kwargs, ext='jpg')
+            logger.info('Saving {} overlap data at {}...'.format(args.vis_mode, save_path_overlap))
+            logger.info('Saving {} overlap plot at {}...'.format(args.vis_mode, save_path_plot))
+            save_overlap(save_path_overlap, save_path_plot, gradcam_region, label)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
