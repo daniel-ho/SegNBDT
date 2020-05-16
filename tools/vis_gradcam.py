@@ -68,6 +68,13 @@ def parse_args():
 
     return args
 
+class_names = [
+    'unlabelled', 'road', 'sidewalk', 'building', 'wall', 'fence', \
+    'pole', 'traffic_light', 'traffic_sign', 'vegetation', 'terrain', \
+    'sky', 'person', 'rider', 'car', 'truck', 'bus', 'train', \
+    'motorcycle', 'bicycle'
+]
+
 def get_pixels(pixel_i, pixel_j, pixel_i_range, pixel_j_range, cartesian_product):
     assert not (pixel_i and pixel_i_range), \
         'Can only specify list of numbers (--pixel-i) OR a range (--pixel-i-range)'
@@ -107,19 +114,19 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
         gradcam = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
     cv2.imwrite(save_path, np.uint8(gradcam), [cv2.IMWRITE_JPEG_QUALITY, 50])
 
-def generate_save_path(output_dir, vis_mode, gradcam_kwargs, target_layer, use_nbdt, nbdt_node_wnid, suffix=''):
-    # TODO: put node in save path
+def generate_output_dir(output_dir, vis_mode, target_layer, use_nbdt, nbdt_node_wnid):
     vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
-    save_path_args = gradcam_kwargs.copy()
 
     dir = f'{mode}_{target_layer}'
     if use_nbdt:
         dir += f'_{nbdt_node_wnid}'
+    os.makedirs(dir, exist_ok=True)
+    return dir
 
-    fname = generate_fname(save_path_args)
-    save_path = os.path.join(output_dir, dir, f'{fname}.jpg')
-    os.makedirs(Path(save_path).parent, exist_ok=True)
+def generate_save_path(output_dir, gradcam_kwargs, suffix='', ext='jpg'):
+    fname = generate_fname(gradcam_kwargs)
+    save_path = os.path.join(output_dir, f'{fname}.{ext}')
     return save_path
 
 def generate_fname(kwargs, order=('image', 'pixel_i', 'pixel_j')):
@@ -132,6 +139,22 @@ def generate_fname(kwargs, order=('image', 'pixel_i', 'pixel_j')):
         parts.append(f'{key}-{kwargs.pop(key)}')
     return '-'.join(parts)
 
+def compute_overlap(label, gradcam_region):
+    cls_to_mass = {}
+    for cls in map(int, np.unique(label.data.numpy())):
+        cls_to_mass[cls] = np.sum(gradcam_region[label == cls])
+    return cls_to_mass
+
+def save_overlap(save_path, gradcam, label, k=5):
+    overlap = compute_overlap(label, gradcam_region)
+    max_keys = list(sorted(overlap, key=lambda key: overlap[key]))[:k]
+    max_labels = [class_names[key] for key in max_keys]
+    max_values = [overlap[key] for key in max_keys]
+    np.save(save_path, overlap)
+    plt.barh(max_labels, max_values)
+
+    save_path = save_path.replace('.npy', '.jpg')
+    plt.savefig(save_path)
 
 def main():
     args = parse_args()
@@ -225,7 +248,7 @@ def main():
 
     def generate_and_save_saliency():
         """too lazy to move out to global lol"""
-        nonlocal maximum, minimum
+        nonlocal maximum, minimum, label
         # Generate GradCAM + save heatmap
         heatmaps = []
         raw_image = retrieve_raw_image(test_dataset, args.image_index)
@@ -239,9 +262,15 @@ def main():
             gradcam_kwargs['max'] = float('%.3g' % maximum)
 
             heatmaps.append(gradcam_region)
-            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+            final_output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+            save_path = generate_save_path(final_output_dir, gradcam_kwargs)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum)
+
+            final_output_dir += '_overlap'
+            save_path = generate_save_path(final_output_dir, gradcam_kwargs, ext='npy')
+            logger.info('Saving {} overlap at {}...'.format(args.vis_mode, save_path))
+            save_overlap(save_path, gradcam_region, label)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
