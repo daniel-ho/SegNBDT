@@ -69,7 +69,7 @@ def parse_args():
     return args
 
 class_names = [
-    'unlabelled', 'road', 'sidewalk', 'building', 'wall', 'fence', \
+    'road', 'sidewalk', 'building', 'wall', 'fence', \
     'pole', 'traffic_light', 'traffic_sign', 'vegetation', 'terrain', \
     'sky', 'person', 'rider', 'car', 'truck', 'bus', 'train', \
     'motorcycle', 'bicycle'
@@ -143,14 +143,15 @@ def generate_fname(kwargs, order=('image', 'pixel_i', 'pixel_j')):
 def compute_overlap(label, gradcam):
     cls_to_mass = {}
     gradcam = GradCAM.normalize(gradcam)[0,0]
-    gradcam /= gradcam.sum()
     for cls in map(int, np.unique(label.tolist())):
-        cls_to_mass[cls] = gradcam[label == cls].sum()
+        selector = label == cls
+        cls_to_mass[cls] = gradcam[selector].sum() / selector.sum()
+    cls_to_mass.pop(255)  # the 'ignore' label
     return cls_to_mass
 
 def save_overlap(save_path_overlap, save_path_plot, gradcam, label, k=5):
     overlap = compute_overlap(label, gradcam)
-    max_keys = list(sorted(overlap, key=lambda key: overlap[key]))[:k]
+    max_keys = list(reversed(sorted(overlap, key=lambda key: overlap[key])))[:k]
     max_labels = [class_names[key] for key in max_keys]
     max_values = [overlap[key] for key in max_keys]
     np.save(save_path_overlap, overlap)
