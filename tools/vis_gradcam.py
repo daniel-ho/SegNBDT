@@ -118,7 +118,7 @@ def generate_output_dir(output_dir, vis_mode, target_layer, use_nbdt, nbdt_node_
     vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
 
-    dir = f'{vis_mode}_{target_layer}'
+    dir = os.path.join(output_dir, f'{vis_mode}_{target_layer}')
     if use_nbdt:
         dir += f'_{nbdt_node_wnid}'
     os.makedirs(dir, exist_ok=True)
@@ -142,8 +142,10 @@ def generate_fname(kwargs, order=('image', 'pixel_i', 'pixel_j')):
 
 def compute_overlap(label, gradcam):
     cls_to_mass = {}
+    gradcam = GradCAM.normalize(gradcam.data.numpy())[0,0]
+    gradcam /= gradcam.sum()
     for cls in map(int, np.unique(label.tolist())):
-        cls_to_mass[cls] = gradcam[0,0][label == cls].sum()
+        cls_to_mass[cls] = gradcam[label == cls].sum()
     return cls_to_mass
 
 def save_overlap(save_path, gradcam, label, k=5):
