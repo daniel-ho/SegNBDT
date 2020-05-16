@@ -112,14 +112,17 @@ def generate_save_path(output_dir, vis_mode, gradcam_kwargs, target_layer, use_n
     vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
     save_path_args = gradcam_kwargs.copy()
-    save_path_args['layer'] = target_layer
-    save_path_args['mode'] = vis_mode
+
+    dir = f'{mode}_{target_layer}'
     if use_nbdt:
-        save_path_args['node'] = nbdt_node_wnid
-    save_path = os.path.join(output_dir, f'{generate_fname(**save_path_args)}.jpg')
+        dir += f'_{nbdt_node_wnid}'
+
+    fname = generate_fname(save_path_args)
+    save_path = os.path.join(output_dir, dir, f'{fname}.jpg')
+    os.makedirs(Path(save_path).parent, exist_ok=True)
     return save_path
 
-def generate_fname(order=('mode', 'image', 'pixel_i', 'pixel_j', 'layer'), **kwargs):
+def generate_fname(kwargs, order=('image', 'pixel_i', 'pixel_j')):
     parts = []
     for key in order:
         if key not in kwargs:
