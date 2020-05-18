@@ -64,6 +64,8 @@ def parse_args():
                         help="Modify config options using the command-line",
                         default=None,
                         nargs=argparse.REMAINDER)
+    parser.add_argument('--skip-save-npy', action='store_true',
+                        help="Don't save the npy file.")
 
     args = parser.parse_args()
     update_config(config, args)
@@ -103,7 +105,7 @@ def retrieve_raw_image(dataset, index):
     return image
 
 def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
-        minimum=None, maximum=None):
+        minimum=None, maximum=None, save_npy=True):
     gradcam = gradcam.cpu().numpy()
     np_save_path = save_path.replace('.jpg', '.npy')
     np.save(np_save_path, gradcam)
@@ -269,7 +271,7 @@ def main():
             output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
             save_path = generate_save_path(output_dir, gradcam_kwargs)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
-            save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum)
+            save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum, save_npy=not args.skip_save_npy)
 
             output_dir += '_overlap'
             os.makedirs(output_dir, exist_ok=True)
