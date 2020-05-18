@@ -285,13 +285,13 @@ def main():
             logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, combined, raw_image)
 
-    for image_index in get_image_indices(args.image_index):
+    gradcam = Saliency(model=model, candidate_layers=target_layers,
+        use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
+
+    for image_index in get_image_indices(args.image_index, args.image_index_range):
         image, label, _, name = test_dataset[image_index]
         image = torch.from_numpy(image).unsqueeze(0).to(device)
         logger.info("Using image {}...".format(name))
-
-        gradcam = Saliency(model=model, candidate_layers=target_layers,
-            use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
         pred_probs, pred_labels = gradcam.forward(image)
 
         maximum, minimum = -1000, 0
@@ -309,7 +309,7 @@ def main():
             gradcam.backward(pred_labels[:,[0],:,:])
 
             generate_and_save_saliency()
-            return
+            continue
 
         pixels = get_pixels(
             args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
