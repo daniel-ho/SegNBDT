@@ -255,7 +255,7 @@ def main():
         nonlocal maximum, minimum, label
         # Generate GradCAM + save heatmap
         heatmaps = []
-        raw_image = retrieve_raw_image(test_dataset, args.image_index)
+        raw_image = retrieve_raw_image(test_dataset, image_index)
         for layer in target_layers:
             gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
 
@@ -303,7 +303,7 @@ def main():
                     or args.pixel_j_range), \
                 'the "Whole" saliency method generates one map for the whole ' \
                 'image, not for specific pixels'
-            gradcam_kwargs = {'image': args.image_index}
+            gradcam_kwargs = {'image': image_index}
             if args.suffix:
                 gradcam_kwargs['suffix'] = args.suffix
             gradcam.backward(pred_labels[:,[0],:,:])
@@ -323,10 +323,10 @@ def main():
 
             # Run backward pass
             # Note: Computes backprop wrt most likely predicted class rather than gt class
-            gradcam_kwargs = {'image': args.image_index, 'pixel_i': pixel_i, 'pixel_j': pixel_j}
+            gradcam_kwargs = {'image': image_index, 'pixel_i': pixel_i, 'pixel_j': pixel_j}
             if args.suffix:
                 gradcam_kwargs['suffix'] = args.suffix
-            logger.info(f'Running {args.vis_mode} on image {args.image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
+            logger.info(f'Running {args.vis_mode} on image {image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
             output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
             gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 
