@@ -58,7 +58,7 @@ def parse_args():
                         help='Appended to each image filename.')
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
-    parser.add_argument('--nbdt-node-wnid', type=str, default='',
+    parser.add_argument('--nbdt-node-wnid', type=str, default='', nargs='*',
                         help='WNID of NBDT node from which to compute output logits')
     parser.add_argument('opts',
                         help="Modify config options using the command-line",
@@ -247,11 +247,6 @@ def main():
     if config.NBDT.USE_NBDT:
         target_layers = ['model.' + layer for layer in target_layers]
 
-    # Run forward pass once, outside of loop
-    if config.NBDT.USE_NBDT:
-        logger.info("Using logits from node with wnid {}...".format(args.nbdt_node_wnid))
-    Saliency = eval('Seg'+args.vis_mode)   # change to dict?
-
     def generate_and_save_saliency():
         """too lazy to move out to global lol"""
         nonlocal maximum, minimum, label
@@ -268,7 +263,7 @@ def main():
             gradcam_kwargs['max'] = float('%.3g' % maximum)
 
             heatmaps.append(gradcam_region)
-            output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+            output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, nbdt_node_wnid)
             save_path = generate_save_path(output_dir, gradcam_kwargs)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum, save_npy=not args.skip_save_npy)
@@ -283,58 +278,63 @@ def main():
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
-            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, 'combined', config.NBDT.USE_NBDT, args.nbdt_node_wnid)
+            save_path = generate_save_path(final_output_dir, args.vis_mode, gradcam_kwargs, 'combined', config.NBDT.USE_NBDT, nbdt_node_wnid)
             logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, combined, raw_image)
 
-    gradcam = Saliency(model=model, candidate_layers=target_layers,
-        use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=args.nbdt_node_wnid)
+    for nbdt_node_wnid in args.nbdt_node_wnid:
+        # Run forward pass once, outside of loop
+        if config.NBDT.USE_NBDT:
+            logger.info("Using logits from node with wnid {}...".format(nbdt_node_wnid))
+        Saliency = eval('Seg'+args.vis_mode)   # change to dict?
+        gradcam = Saliency(model=model, candidate_layers=target_layers,
+            use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=nbdt_node_wnid)
 
-    for image_index in get_image_indices(args.image_index, args.image_index_range):
-        image, label, _, name = test_dataset[image_index]
-        image = torch.from_numpy(image).unsqueeze(0).to(device)
-        logger.info("Using image {}...".format(name))
-        pred_probs, pred_labels = gradcam.forward(image)
+        for image_index in get_image_indices(args.image_index, args.image_index_range):
+            image, label, _, name = test_dataset[image_index]
+            image = torch.from_numpy(image).unsqueeze(0).to(device)
+            logger.info("Using image {}...".format(name))
+            pred_probs, pred_labels = gradcam.forward(image)
 
-        maximum, minimum = -1000, 0
-        logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
+            maximum, minimum = -1000, 0
+            logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
 
-        if getattr(Saliency, 'whole_image', False):
-            assert not (
-                    args.pixel_i or args.pixel_j or args.pixel_i_range
-                    or args.pixel_j_range), \
-                'the "Whole" saliency method generates one map for the whole ' \
-                'image, not for specific pixels'
-            gradcam_kwargs = {'image': image_index}
-            if args.suffix:
-                gradcam_kwargs['suffix'] = args.suffix
-            gradcam.backward(pred_labels[:,[0],:,:])
+            if getattr(Saliency, 'whole_image', False):
+                assert not (
+                        args.pixel_i or args.pixel_j or args.pixel_i_range
+                        or args.pixel_j_range), \
+                    'the "Whole" saliency method generates one map for the whole ' \
+                    'image, not for specific pixels'
+                gradcam_kwargs = {'image': image_index}
+                if args.suffix:
+                    gradcam_kwargs['suffix'] = args.suffix
+                gradcam.backward(pred_labels[:,[0],:,:])
 
-            generate_and_save_saliency()
-            continue
+                generate_and_save_saliency()
+                continue
 
-        pixels = get_pixels(
-            args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
-            args.pixel_cartesian_product)
-        logger.info(f'Running on {len(pixels)} pixels.')
+            pixels = get_pixels(
+                args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
+                args.pixel_cartesian_product)
+            logger.info(f'Running on {len(pixels)} pixels.')
 
-        for pixel_i, pixel_j in pixels:
-            assert pixel_i < test_size[0] and pixel_j < test_size[1], \
-                "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
-                    pixel_i,pixel_j,test_size[0],test_size[1])
+            for pixel_i, pixel_j in pixels:
+                assert pixel_i < test_size[0] and pixel_j < test_size[1], \
+                    "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
+                        pixel_i,pixel_j,test_size[0],test_size[1])
 
-            # Run backward pass
-            # Note: Computes backprop wrt most likely predicted class rather than gt class
-            gradcam_kwargs = {'image': image_index, 'pixel_i': pixel_i, 'pixel_j': pixel_j}
-            if args.suffix:
-                gradcam_kwargs['suffix'] = args.suffix
-            logger.info(f'Running {args.vis_mode} on image {image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
-            output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
-            gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
+                # Run backward pass
+                # Note: Computes backprop wrt most likely predicted class rather than gt class
+                gradcam_kwargs = {'image': image_index, 'pixel_i': pixel_i, 'pixel_j': pixel_j}
+                if args.suffix:
+                    gradcam_kwargs['suffix'] = args.suffix
+                logger.info(f'Running {args.vis_mode} on image {image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
+                output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
+                gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 
-            generate_and_save_saliency()
+                generate_and_save_saliency()
 
-        logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
+            logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
 
 if __name__ == '__main__':
