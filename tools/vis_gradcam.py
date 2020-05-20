@@ -47,9 +47,9 @@ def parse_args():
                         help='i coordinate of pixel from which to compute GradCAM')
     parser.add_argument('--pixel-j', type=int, default=0, nargs='*',
                         help='j coordinate of pixel from which to compute GradCAM')
-    parser.add_argument('--pixel-i-range', type=int, default=0, nargs=3,
+    parser.add_argument('--pixel-i-range', type=int, nargs=3,
                         help='Range for pixel i. Expects [start, end) and step.')
-    parser.add_argument('--pixel-j-range', type=int, default=0, nargs=3,
+    parser.add_argument('--pixel-j-range', type=int, nargs=3,
                         help='Range for pixel j. Expects [start, end) and step.')
     parser.add_argument('--pixel-cartesian-product', action='store_true',
                         help='Compute cartesian product between all is and js '
@@ -327,12 +327,18 @@ def main():
                 generate_and_save_saliency(image_index)
                 continue
 
-            pixels = get_pixels(
-                args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
-                args.pixel_cartesian_product)
+            if cls:
+                cls_index = class_names.index(cls)
+                pixels = (pred_labels[0,0,:,:] == cls_index).nonzero()
+            else:
+                assert (args.pixel_i or args.pixel_i_range) and (args.pixel_j or args.pixel_j_range)
+                pixels = get_pixels(
+                    args.pixel_i, args.pixel_j, args.pixel_i_range, args.pixel_j_range,
+                    args.pixel_cartesian_product)
             logger.info(f'Running on {len(pixels)} pixels.')
 
             for pixel_i, pixel_j in pixels:
+                pixel_i, pixel_j = int(pixel_i), int(pixel_j)
                 assert pixel_i < test_size[0] and pixel_j < test_size[1], \
                     "Pixel ({},{}) is out of bounds for image of size ({},{})".format(
                         pixel_i,pixel_j,test_size[0],test_size[1])
