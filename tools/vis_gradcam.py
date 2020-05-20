@@ -292,7 +292,8 @@ def main():
     if cls:
         assert config.NBDT.USE_NBDT, 'Must be using NBDT'
         from nbdt.data.custom import Node
-        assert hasattr(model, 'nodes'), 'NBDT must have list of nodes'
+        assert hasattr(model, 'rules') and hasattr(model.rules, 'nodes'), \
+            'NBDT must have rules with nodes'
         logger.info("Getting nodes leading up to class leaf {}...".format(cls))
         leaf_to_path_nodes = Node.get_leaf_to_path(model.rules.nodes)
 
@@ -301,14 +302,7 @@ def main():
         path_nodes = leaf_to_path_nodes[leaf]
         nbdt_node_wnids = [item['node'].wnid for item in path_nodes if item['node']]
 
-    for nbdt_node_wnid in nbdt_node_wnids:
-        # Run forward pass once, outside of loop
-        if config.NBDT.USE_NBDT:
-            logger.info("Using logits from node with wnid {}...".format(nbdt_node_wnid))
-        Saliency = eval('Seg'+args.vis_mode)   # change to dict?
-        gradcam = Saliency(model=model, candidate_layers=target_layers,
-            use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=nbdt_node_wnid)
-
+    def run():
         for image_index in get_image_indices(args.image_index, args.image_index_range):
             image, label, _, name = test_dataset[image_index]
             image = torch.from_numpy(image).unsqueeze(0).to(device)
@@ -354,6 +348,20 @@ def main():
                 generate_and_save_saliency()
 
             logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
+
+    # Instantiate wrapper once, outside of loop
+    Saliency = eval('Seg'+args.vis_mode)   # change to dict?
+    gradcam = Saliency(model=model, candidate_layers=target_layers,
+        use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=None)
+
+    for nbdt_node_wnid in nbdt_node_wnids:
+        if config.NBDT.USE_NBDT:
+            logger.info("Using logits from node with wnid {}...".format(nbdt_node_wnid))
+        gradcam.set_nbdt_node_wnid(nbdt_node_wnid)
+        run()
+
+    if not nbdt_node_wnids:
+        run()
 
 
 if __name__ == '__main__':
