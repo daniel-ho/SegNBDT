@@ -58,6 +58,9 @@ def parse_args():
                         help='Appended to each image filename.')
     parser.add_argument('--target-layers', type=str,
                         help='List of target layers from which to compute GradCAM')
+    parser.add_argument('--nbdt-node-wnids-for', type=str,
+                        help='Class NAME. Automatically computes nodes leading '
+                             'up to particular class leaf.')
     parser.add_argument('--nbdt-node-wnid', type=str, default='', nargs='*',
                         help='WNID of NBDT node from which to compute output logits')
     parser.add_argument('opts',
@@ -214,7 +217,9 @@ def main():
     # Wrap original model with NBDT
     if config.NBDT.USE_NBDT:
         from nbdt.model import SoftSegNBDT
-        model = SoftSegNBDT(config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY)
+        model = SoftSegNBDT(
+            config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY,
+            classes=class_names)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = model.to(device).eval()
@@ -282,7 +287,21 @@ def main():
             logger.info('Saving combined {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, combined, raw_image)
 
-    for nbdt_node_wnid in args.nbdt_node_wnid:
+    nbdt_node_wnids = args.nbdt_node_wnid or []
+    cls = args.nbdt_node_wnids_for
+    if cls:
+        assert config.NBDT.USE_NBDT, 'Must be using NBDT'
+        from nbdt.data.custom import Node
+        assert hasattr(model, 'nodes'), 'NBDT must have list of nodes'
+        logger.info("Getting nodes leading up to class leaf {}...".format(cls))
+        leaf_to_path_nodes = Node.get_leaf_to_path(model.rules.nodes)
+
+        cls_index = class_names.index(cls)
+        leaf = model.rules.nodes[0].wnids[cls_index]
+        path_nodes = leaf_to_path_nodes[leaf]
+        nbdt_node_wnids = [item['node'].wnid for item in path_nodes if item['node']]
+
+    for nbdt_node_wnid in nbdt_node_wnids:
         # Run forward pass once, outside of loop
         if config.NBDT.USE_NBDT:
             logger.info("Using logits from node with wnid {}...".format(nbdt_node_wnid))
