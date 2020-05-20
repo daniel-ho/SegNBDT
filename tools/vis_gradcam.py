@@ -252,7 +252,7 @@ def main():
     if config.NBDT.USE_NBDT:
         target_layers = ['model.' + layer for layer in target_layers]
 
-    def generate_and_save_saliency():
+    def generate_and_save_saliency(image_index):
         """too lazy to move out to global lol"""
         nonlocal maximum, minimum, label
         # Generate GradCAM + save heatmap
@@ -303,6 +303,7 @@ def main():
         nbdt_node_wnids = [item['node'].wnid for item in path_nodes if item['node']]
 
     def run():
+        nonlocal maximum, minimum, label, gradcam_kwargs
         for image_index in get_image_indices(args.image_index, args.image_index_range):
             image, label, _, name = test_dataset[image_index]
             image = torch.from_numpy(image).unsqueeze(0).to(device)
@@ -323,7 +324,7 @@ def main():
                     gradcam_kwargs['suffix'] = args.suffix
                 gradcam.backward(pred_labels[:,[0],:,:])
 
-                generate_and_save_saliency()
+                generate_and_save_saliency(image_index)
                 continue
 
             pixels = get_pixels(
@@ -345,7 +346,7 @@ def main():
                 output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
                 gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
 
-                generate_and_save_saliency()
+                generate_and_save_saliency(image_index)
 
             logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
@@ -354,6 +355,7 @@ def main():
     gradcam = Saliency(model=model, candidate_layers=target_layers,
         use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=None)
 
+    maximum, minimum, label, gradcam_kwargs = -1000, 0, None, {}
     for nbdt_node_wnid in nbdt_node_wnids:
         if config.NBDT.USE_NBDT:
             logger.info("Using logits from node with wnid {}...".format(nbdt_node_wnid))

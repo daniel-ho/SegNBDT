@@ -29,6 +29,9 @@ class _BaseWrapper(object):
         one_hot.scatter_(1, labels, 1.0)
         return one_hot
 
+    def set_nbdt_node_wnid(self, wnid):
+        self.nbdt_node_wnid = wnid
+
     def forward(self, image):
         self.image_shape = image.shape[2:]
         if self.use_nbdt:
