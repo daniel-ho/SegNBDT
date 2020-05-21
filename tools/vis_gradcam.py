@@ -10,7 +10,7 @@ import timeit
 from pathlib import Path
 
 import cv2
-import numpy as np
+import random
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
@@ -43,6 +43,9 @@ def parse_args():
                         help='Index of input image for GradCAM')
     parser.add_argument('--image-index-range', type=int, nargs=3,
                         help='Expects [start, end) and step.')
+    parser.add_argument('--pixel-max-num-random', type=int, default=10,
+                        help='Maximum number of pixels to randomly sample from '
+                        'an image, when fetching all predictions for a class.')
     parser.add_argument('--pixel-i', type=int, default=0, nargs='*',
                         help='i coordinate of pixel from which to compute GradCAM')
     parser.add_argument('--pixel-j', type=int, default=0, nargs='*',
@@ -329,7 +332,13 @@ def main():
 
             if cls:
                 cls_index = class_names.index(cls)
-                pixels = (pred_labels[0,0,:,:] == cls_index).nonzero()
+                label = torch.Tensor(label).to(pred_labels.device)
+                is_right_class = pred_labels[0,0,:,:] == cls_index
+                is_correct = pred_labels == label
+                pixels = (is_right_class * is_correct).nonzero()[:, 2:]
+                pixels = random.sample(
+                    pixels,
+                    min(args.pixel_max_num_random, len(pixels)))
             else:
                 assert (args.pixel_i or args.pixel_i_range) and (args.pixel_j or args.pixel_j_range)
                 pixels = get_pixels(

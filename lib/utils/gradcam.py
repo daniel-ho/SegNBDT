@@ -46,6 +46,7 @@ class _BaseWrapper(object):
             self.logits = node_logits.reshape(n,h,w,node_logits.shape[-1]).permute(0,3,1,2)
         else:
             self.logits = self.model(image)
+        self.logits = F.interpolate(self.logits, self.image_shape)
         self.probs = F.softmax(self.logits, dim=1)
         return self.probs.sort(dim=1, descending=True)  # ordered results
 
