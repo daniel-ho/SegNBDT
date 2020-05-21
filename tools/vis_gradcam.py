@@ -44,6 +44,8 @@ def parse_args():
                         help='Index of input image for GradCAM')
     parser.add_argument('--image-index-range', type=int, nargs=3,
                         help='Expects [start, end) and step.')
+    parser.add_argument('--crop-size', type=int, default=-1,
+                        help='Size of crop around the center pixel')
     parser.add_argument('--pixel-max-num-random', type=int, default=10,
                         help='Maximum number of pixels to randomly sample from '
                         'an image, when fetching all predictions for a class.')
@@ -317,7 +319,7 @@ def main():
             maximum, minimum = -1000, 0
             logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
 
-            if getattr(Saliency, 'whole_image', False):
+            if getattr(Saliency, 'whole_image', False) and args.crop_size <= 0:
                 assert not (
                         args.pixel_i or args.pixel_j or args.pixel_i_range
                         or args.pixel_j_range), \
@@ -362,7 +364,18 @@ def main():
                     gradcam_kwargs['suffix'] = args.suffix
                 logger.info(f'Running {args.vis_mode} on image {image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
                 output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
-                gradcam.backward(pred_labels[:,[0],:,:], output_pixel_i, output_pixel_j)
+
+                pred_labels = pred_labels[:, [0], :, :]
+                if args.crop_size > 0:
+                    half = args.crop_size // 2
+                    slice_i = slice(output_pixel_i - half, output_pixel_i + half)
+                    slice_j = slice(output_pixel_j - half, output_pixel_j + half)
+                    pred_labels = pred_labels[:, :, slice_i, slice_j]
+
+                if getattr(Saliency, 'whole_image', False):
+                    gradcam.backward(pred_labels, output_pixel_i, output_pixel_j)
+                else:
+                    gradcam.backward(pred_labels)
 
                 generate_and_save_saliency(image_index)
 
