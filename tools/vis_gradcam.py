@@ -180,11 +180,13 @@ def get_image_indices(image_index, image_index_range):
         return range(*image_index_range)
     return [image_index]
 
-def crop(i, j, size, image):
+def crop(i, j, size, image, is_tensor=True):
     half = size // 2
     slice_i = slice(i - half, i + half)
     slice_j = slice(j - half, j + half)
-    return image[..., slice_i, slice_j]
+    if is_tensor:
+        return image[..., slice_i, slice_j]
+    return image[slice_i, slice_j, ...]
 
 def main():
     args = parse_args()
@@ -272,13 +274,13 @@ def main():
         heatmaps = []
         raw_image = retrieve_raw_image(test_dataset, image_index)
         if crop_size and pixel_i and pixel_j:
-            raw_image = crop(pixel_i, pixel_j, crop_size, raw_image)
-            
+            raw_image = crop(pixel_i, pixel_j, crop_size, raw_image, is_tensor=False)
+
         for layer in target_layers:
             gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
 
             if crop_size and pixel_i and pixel_j:
-                gradcam_region = crop(pixel_i, pixel_j, crop_size, gradcam_region)
+                gradcam_region = crop(pixel_i, pixel_j, crop_size, gradcam_region, is_tensor=True)
 
             maximum = max(float(gradcam_region.max()), maximum)
             minimum = min(float(gradcam_region.min()), minimum)
