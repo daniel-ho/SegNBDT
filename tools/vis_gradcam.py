@@ -11,6 +11,7 @@ from pathlib import Path
 
 import cv2
 import random
+import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
@@ -336,9 +337,11 @@ def main():
                 is_right_class = pred_labels[0,0,:,:] == cls_index
                 is_correct = pred_labels == label
                 pixels = (is_right_class * is_correct).nonzero()[:, 2:]
-                pixels = random.sample(
-                    pixels,
-                    min(args.pixel_max_num_random, len(pixels)))
+
+                random.seed(cls_index)
+                k = min(args.pixel_max_num_random, len(pixels))
+                indices = random.sample(range(len(pixels)), k)
+                pixels = pixels[indices]
             else:
                 assert (args.pixel_i or args.pixel_i_range) and (args.pixel_j or args.pixel_j_range)
                 pixels = get_pixels(
