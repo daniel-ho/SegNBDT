@@ -279,8 +279,10 @@ def main():
         for layer in target_layers:
             gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
 
+            local_label = label
             if crop_size and pixel_i and pixel_j:
                 gradcam_region = crop(pixel_i, pixel_j, crop_size, gradcam_region, is_tensor=True)
+                local_label = crop(pixel_i, pixel_j, crop_size, label)
 
             maximum = max(float(gradcam_region.max()), maximum)
             minimum = min(float(gradcam_region.min()), minimum)
@@ -300,7 +302,7 @@ def main():
             save_path_plot = generate_save_path(output_dir, gradcam_kwargs, ext='jpg')
             logger.info('Saving {} overlap data at {}...'.format(args.vis_mode, save_path_overlap))
             logger.info('Saving {} overlap plot at {}...'.format(args.vis_mode, save_path_plot))
-            save_overlap(save_path_overlap, save_path_plot, gradcam_region, label)
+            save_overlap(save_path_overlap, save_path_plot, gradcam_region, local_label)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
@@ -384,8 +386,9 @@ def main():
 
                 if args.crop_size <= 0:
                     gradcam.backward(pred_labels[:, [0], :, :], output_pixel_i, output_pixel_j)
-
-                generate_and_save_saliency(image_index, pixel_i, pixel_j, args.crop_size)
+                    generate_and_save_saliency(image_index)
+                else:
+                    generate_and_save_saliency(image_index, pixel_i, pixel_j, args.crop_size)
 
             logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
