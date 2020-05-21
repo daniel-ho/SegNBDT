@@ -258,7 +258,8 @@ def main():
     if config.NBDT.USE_NBDT:
         target_layers = ['model.' + layer for layer in target_layers]
 
-    def generate_and_save_saliency(image_index):
+    def generate_and_save_saliency(
+            image_index, pixel_i=None, pixel_j=None, crop_size=None):
         """too lazy to move out to global lol"""
         nonlocal maximum, minimum, label
         # Generate GradCAM + save heatmap
@@ -266,6 +267,12 @@ def main():
         raw_image = retrieve_raw_image(test_dataset, image_index)
         for layer in target_layers:
             gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
+
+            if crop_size and pixel_i and pixel_j:
+                half = crop_size // 2
+                slice_i = slice(pixel_i - half, pixel_i + half)
+                slice_j = slice(pixel_j - half, pixel_j + half)
+                gradcam_region = gradcam_region[..., slice_i, slice_j]
 
             maximum = max(float(gradcam_region.max()), maximum)
             minimum = min(float(gradcam_region.min()), minimum)
@@ -319,7 +326,7 @@ def main():
             maximum, minimum = -1000, 0
             logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
 
-            if getattr(Saliency, 'whole_image', False) and args.crop_size <= 0:
+            if getattr(Saliency, 'whole_image', False):
                 assert not (
                         args.pixel_i or args.pixel_j or args.pixel_i_range
                         or args.pixel_j_range), \
@@ -331,7 +338,9 @@ def main():
                 gradcam.backward(pred_labels[:,[0],:,:])
 
                 generate_and_save_saliency(image_index)
-                continue
+
+                if args.crop_size <= 0:
+                    continue
 
             if cls:
                 cls_index = class_names.index(cls)
@@ -365,19 +374,10 @@ def main():
                 logger.info(f'Running {args.vis_mode} on image {image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
                 output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
 
-                pred_labels = pred_labels[:, [0], :, :]
-                if args.crop_size > 0:
-                    half = args.crop_size // 2
-                    slice_i = slice(output_pixel_i - half, output_pixel_i + half)
-                    slice_j = slice(output_pixel_j - half, output_pixel_j + half)
-                    pred_labels = pred_labels[:, :, slice_i, slice_j]
+                if args.crop_size <= 0:
+                    gradcam.backward(pred_labels[:, [0], :, :], output_pixel_i, output_pixel_j)
 
-                if getattr(Saliency, 'whole_image', False):
-                    gradcam.backward(pred_labels, output_pixel_i, output_pixel_j)
-                else:
-                    gradcam.backward(pred_labels)
-
-                generate_and_save_saliency(image_index)
+                generate_and_save_saliency(image_index, pixel_i, pixel_j, args.crop_size)
 
             logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
