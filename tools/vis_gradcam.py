@@ -273,16 +273,16 @@ def main():
         # Generate GradCAM + save heatmap
         heatmaps = []
         raw_image = retrieve_raw_image(test_dataset, image_index)
-        if crop_size and pixel_i and pixel_j:
+
+        should_crop = crop_size is not None and pixel_i is not None and pixel_j is not None
+        if should_crop:
             raw_image = crop(pixel_i, pixel_j, crop_size, raw_image, is_tensor=False)
 
         for layer in target_layers:
             gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
 
-            local_label = label
-            if crop_size and pixel_i and pixel_j:
+            if should_crop:
                 gradcam_region = crop(pixel_i, pixel_j, crop_size, gradcam_region, is_tensor=True)
-                local_label = crop(pixel_i, pixel_j, crop_size, label)
 
             maximum = max(float(gradcam_region.max()), maximum)
             minimum = min(float(gradcam_region.min()), minimum)
@@ -296,13 +296,15 @@ def main():
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
             save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum, save_npy=not args.skip_save_npy)
 
+            if crop_size and pixel_i and pixel_j:
+                continue
             output_dir += '_overlap'
             os.makedirs(output_dir, exist_ok=True)
             save_path_overlap = generate_save_path(output_dir, gradcam_kwargs, ext='npy')
             save_path_plot = generate_save_path(output_dir, gradcam_kwargs, ext='jpg')
             logger.info('Saving {} overlap data at {}...'.format(args.vis_mode, save_path_overlap))
             logger.info('Saving {} overlap plot at {}...'.format(args.vis_mode, save_path_plot))
-            save_overlap(save_path_overlap, save_path_plot, gradcam_region, local_label)
+            save_overlap(save_path_overlap, save_path_plot, gradcam_region, label)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
