@@ -357,8 +357,9 @@ def main():
             if cls:
                 cls_index = class_names.index(cls)
                 label = torch.Tensor(label).to(pred_labels.device)
-                is_right_class = pred_labels[0,0,:,:] == cls_index
-                is_correct = pred_labels == label
+                # is_right_class = pred_labels[0,0,:,:] == cls_index
+                # is_correct = pred_labels == label
+                is_right_class = is_correct = label == cls_index  #TODO:tmp
                 pixels = (is_right_class * is_correct).nonzero()[:, 2:]
 
                 random.seed(cls_index)
