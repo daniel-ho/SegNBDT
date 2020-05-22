@@ -280,7 +280,7 @@ def main():
             raw_image = crop(pixel_i, pixel_j, crop_size, raw_image, is_tensor=False)
 
         for layer in target_layers:
-            gradcam_region = gradcam.generate(target_layer=layer, normalize=normalize)
+            gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
 
             if should_crop:
                 gradcam_region = crop(pixel_i, pixel_j, crop_size, gradcam_region, is_tensor=True)
@@ -295,6 +295,7 @@ def main():
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
 
             if normalize:
+                gradcam_region = GradCAM.normalize(gradcam_region)
                 save_gradcam(save_path, gradcam_region, raw_image, save_npy=not args.skip_save_npy)
             else:
                 save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum, save_npy=not args.skip_save_npy)
