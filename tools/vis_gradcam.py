@@ -267,7 +267,8 @@ def main():
         target_layers = ['model.' + layer for layer in target_layers]
 
     def generate_and_save_saliency(
-            image_index, pixel_i=None, pixel_j=None, crop_size=None):
+            image_index, pixel_i=None, pixel_j=None, crop_size=None,
+            normalize=False):
         """too lazy to move out to global lol"""
         nonlocal maximum, minimum, label
         # Generate GradCAM + save heatmap
@@ -279,7 +280,7 @@ def main():
             raw_image = crop(pixel_i, pixel_j, crop_size, raw_image, is_tensor=False)
 
         for layer in target_layers:
-            gradcam_region = gradcam.generate(target_layer=layer, normalize=False)
+            gradcam_region = gradcam.generate(target_layer=layer, normalize=normalize)
 
             if should_crop:
                 gradcam_region = crop(pixel_i, pixel_j, crop_size, gradcam_region, is_tensor=True)
@@ -294,7 +295,12 @@ def main():
             output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, nbdt_node_wnid)
             save_path = generate_save_path(output_dir, gradcam_kwargs)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
-            save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum, save_npy=not args.skip_save_npy)
+
+            if normalize:
+                save_gradcam(save_path, gradcam_region, raw_image, save_npy=not args.skip_save_npy)
+            else:
+                save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum, save_npy=not args.skip_save_npy)
+
 
             if crop_size and pixel_i and pixel_j:
                 continue
