@@ -6,18 +6,20 @@ from collections import defaultdict
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
+parser.add_argument('directory', nargs='*', help='Explicitly list dirs')
 parser.add_argument('--row', choices=('sort', 'match'),
                     default='sort')
 args = parser.parse_args()
 
 
-directories = sorted(os.listdir('.'))
+directories = list(sorted(args.directory or os.listdir('.')))
+print(directories)
 
 paths_per_dirs = []
 for directory in directories:
     if not os.path.isdir(directory):
         continue
-    paths_per_dirs.append(sorted(glob.iglob(f'{directory}/*.jpg'), key=lambda s: int(s.split('-')[1])))
+    paths_per_dirs.append(sorted(glob.iglob(f'{directory}/*.jpg'), key=lambda s: int(Path(s).stem.split('-')[1])))
 
 if args.row == 'sort':
     paths_per_rows = list(zip(*paths_per_dirs))
