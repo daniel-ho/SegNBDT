@@ -209,8 +209,8 @@ def get_random_pixels(n, pixels, bin_size=100, seed=0):
 
     pixels = []
     for pixels_per_bin in pixels_per_bins:
-        index = random.sample(range(len(pixels_per_bin)), 1)
-        pixels.append(pixels_per_bin[index])
+        indices = random.sample(range(len(pixels_per_bin)), 1)
+        pixels.append(pixels_per_bin[indices[0])
     return pixels
 
 def main():
