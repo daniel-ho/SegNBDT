@@ -185,8 +185,8 @@ def get_image_indices(image_index, image_index_range):
 
 def crop(i, j, size, image, is_tensor=True):
     half = size // 2
-    slice_i = slice(i - half, i + half)
-    slice_j = slice(j - half, j + half)
+    slice_i = slice( max(i - half, 0) , i + half)
+    slice_j = slice( max(j - half, 0), j + half)
     if is_tensor:
         return image[..., slice_i, slice_j]
     return image[slice_i, slice_j, ...]
