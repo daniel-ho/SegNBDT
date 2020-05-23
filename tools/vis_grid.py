@@ -40,6 +40,11 @@ template = Template('''
 <html>
     <body>
     <table border="0" style="table-layout: fixed;">
+        <tr>
+            {% for header in headers %}
+            <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
     {% for paths_per_im in paths_per_rows %}
         <tr>
         {% for path in paths_per_im %}
@@ -56,4 +61,7 @@ template = Template('''
 ''')
 
 with open('index.html', 'w') as f:
-    f.write(template.render(paths_per_rows=paths_per_rows, width=300))
+    f.write(template.render(
+        headers=directories,
+        paths_per_rows=paths_per_rows,
+        width=300))
