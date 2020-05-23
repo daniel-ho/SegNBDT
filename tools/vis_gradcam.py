@@ -127,13 +127,16 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
         gradcam = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
     cv2.imwrite(save_path, np.uint8(gradcam), [cv2.IMWRITE_JPEG_QUALITY, 50])
 
-def generate_output_dir(output_dir, vis_mode, target_layer, use_nbdt, nbdt_node_wnid):
+def generate_output_dir(output_dir, vis_mode, target_layer, use_nbdt,
+        nbdt_node_wnid, crop_size=0):
     vis_mode = vis_mode.lower()
     target_layer = target_layer.replace('model.', '')
 
     dir = os.path.join(output_dir, f'{vis_mode}_{target_layer}')
     if use_nbdt:
         dir += f'_{nbdt_node_wnid}'
+    if crop_size > 0:
+        dir += f'_crop{crop_size}'
     os.makedirs(dir, exist_ok=True)
     return dir
 
@@ -290,7 +293,7 @@ def main():
             logger.info(f'=> Bounds: ({minimum}, {maximum})')
 
             heatmaps.append(gradcam_region)
-            output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, nbdt_node_wnid)
+            output_dir = generate_output_dir(final_output_dir, args.vis_mode, layer, config.NBDT.USE_NBDT, nbdt_node_wnid, args.crop_size)
             save_path = generate_save_path(output_dir, gradcam_kwargs)
             logger.info('Saving {} heatmap at {}...'.format(args.vis_mode, save_path))
 
