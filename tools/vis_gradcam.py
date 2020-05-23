@@ -29,6 +29,7 @@ from utils.gradcam import SegGradCAM, SegNormGrad, GradCAM, SegGradCAMWhole, \
     SegNormGradWhole
 from utils.modelsummary import get_model_summary
 from utils.utils import create_logger
+from collections import defaultdict
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Visualize GradCAM')
@@ -192,6 +193,25 @@ def crop(i, j, size, image, is_tensor=True):
     if is_tensor:
         return image[..., slice_i, slice_j]
     return image[slice_i, slice_j, ...]
+
+def get_random_pixels(n, pixels, bin_size=100, seed=0):
+    random.seed(seed)
+
+    bin_to_pixels = defaultdict(lambda: [])
+    for (i, j) in pixels:
+        bin_to_pixels[(i // bin_size, j // bin_size)].append((i, j))
+
+    if n >= len(bin_to_pixels):
+        pixels_per_bins = bin_to_pixels.values()
+    else:
+        bins = random.sample(bin_to_pixels.keys(), n)
+        pixels_per_bins = [bin_to_pixels[bin] for bin in bins]
+
+    pixels = []
+    for pixels_per_bin in pixels_per_bins:
+        index = random.sample(range(len(pixels_per_bin)), 1)
+        pixels.append(pixels_per_bin[index])
+    return pixels
 
 def main():
     args = parse_args()
@@ -372,10 +392,7 @@ def main():
                 is_right_class = is_correct = label == cls_index  #TODO:tmp
                 pixels = (is_right_class * is_correct).nonzero()
 
-                random.seed(cls_index)
-                k = min(args.pixel_max_num_random, len(pixels))
-                indices = random.sample(range(len(pixels)), k)
-                pixels = pixels[indices]
+                pixels = get_random_pixels(args.pixel_max_num_random, pixels, seed=cls_index)
             else:
                 assert (args.pixel_i or args.pixel_i_range) and (args.pixel_j or args.pixel_j_range)
                 pixels = get_pixels(
