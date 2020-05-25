@@ -13,12 +13,12 @@ def get_args():
     args = parser.parse_args()
 
 
-def paths_from_directories(directories, mode='match'):
+def paths_from_directories(directories, mode='match', filt=lambda x: True):
     paths_per_dirs = []
     for directory in directories:
         if not os.path.isdir(directory):
             continue
-        paths_per_dirs.append(sorted(glob.iglob(f'{directory}/*.jpg'), key=lambda s: int(Path(s).stem.split('-')[1])))
+        paths_per_dirs.append(sorted(filter(filt, glob.iglob(f'{directory}/*.jpg')), key=lambda s: int(Path(s).stem.split('-')[1])))
 
     if mode == 'sort':
         paths_per_rows = list(zip(*paths_per_dirs))

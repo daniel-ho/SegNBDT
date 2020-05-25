@@ -39,12 +39,14 @@ with open(args.template) as f:
 assert args.dir or args.dirs_for_cls, 'Need at least one dir OR specify cls'
 
 if args.dirs_for_cls:
-    dir_to_var = {dir: dir.split('_')[3] for dir in glob.iglob(f'*whole*{args.dirs_for_cls}*')}
+    dir_to_var = {dir: dir.split('_')[3] for dir in glob.iglob(f'*whole*{args.dirs_for_cls}*crop400')}
+    dir_to_var[next(glob.iglob(f'*{args.dirs_for_cls}*original'))] = 'original'
 else:
     dir_to_var = {dir: var for (dir, var) in args.dir}
 print(dir_to_var)
 
-paths_per_fnames = paths_from_directories(dir_to_var, args.file)
+paths_per_fnames = paths_from_directories(dir_to_var, args.file,
+    filt=lambda path: 'pixel' in path)
 for paths_per_fname in paths_per_fnames:
     context = {}
     for path in paths_per_fname:
