@@ -194,7 +194,7 @@ def crop(i, j, size, image, is_tensor=True):
         return image[..., slice_i, slice_j]
     return image[slice_i, slice_j, ...]
 
-def get_random_pixels(n, pixels, bin_size=100, seed=0):
+def get_random_pixels(n, pixels, bin_size=300, seed=0):
     random.seed(seed)
 
     bin_to_pixels = defaultdict(lambda: [])
