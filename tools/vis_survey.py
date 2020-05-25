@@ -56,7 +56,7 @@ function select(i, dontPushHistory) {
 
 function onLoadSelect() {
   const urlParams = new URLSearchParams(window.location.search);
-  const i = urlParams.get('id') || 0;
+  const i = urlParams.get('id') || 1;
   select(i, true);
 }
 
