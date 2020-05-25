@@ -81,6 +81,18 @@ $(document).ready(function() {
   $(window).on('popstate', onLoadSelect);
 });
     </script>
+    <style>
+.comparison {
+    display:flex;
+    flex-direction:row;
+}
+.explanation {
+    flex:1;
+}
+.explanation + .explanation {
+margin-left:5em;
+}
+    </style>
   </head>
   <body>
     <header>
