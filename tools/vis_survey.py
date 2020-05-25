@@ -23,42 +23,45 @@ var files = [
     {% endfor %}
 ];
 
-function select(i) {
+function select(i, dontPushHistory) {
   i = parseInt(i);
   index = i;
   $('#curr').html(i);
 
   $('svg').remove();
-  $('main').load(files[i], function() {
+  $('main').load(files[i - 1], function() {
     console.log('Loaded ' + i);
   })
 
-  if (i <= 0) {
+  if (i <= 1) {
     $('#prev').hide();
   } else {
     var url = '?id=' + (i-1);
     $('#prev').show().attr('i', i-1).attr('href', '?id=' + (i-1));
     $('#prev span').html(i - 1);
-    history.pushState('data', '', url);
   }
 
-  if (i >= files.length - 1) {
+  if (i >= files.length) {
     $('#next').hide();
   } else {
     var url = '?id=' + (i+1);
     $('#next').show().attr('i', i+1).attr('href', url);
     $('#next span').html(i + 1);
-    history.pushState('data', '', url);
+  }
+
+  if (!dontPushHistory) {
+    history.pushState('data', '', '?id=' + i);
   }
 }
 
 function onLoadSelect() {
   const urlParams = new URLSearchParams(window.location.search);
   const i = urlParams.get('id') || 0;
-  select(i);
+  select(i, true);
 }
 
 $(document).ready(function() {
+  $('#total').html(files.length);
   onLoadSelect();
 
   $('#next').on('click', function(e) {
@@ -78,7 +81,7 @@ $(document).ready(function() {
   <body>
     <header>
       <p>
-        <span>Figure ID: <b id="curr">-1</b></span>
+        <span>Figure ID: <b id="curr">-1</b> of <span id="total">-1</span></span>
         <a href="#" id="prev">prev (<span>-1</span>)</a>
         <a href="#" id="next">next (<span>-1</span>)</a>
       </p>
@@ -87,6 +90,7 @@ $(document).ready(function() {
     </main>
   </body>
 </html>
+
 """)
 
 with open("index.html", "w") as f:
