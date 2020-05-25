@@ -28,8 +28,7 @@ function select(i, dontPushHistory) {
   index = i;
   $('#curr').html(i);
 
-  $('svg').remove();
-  $('main').load(files[i - 1], function() {
+  $('div.figure').load(files[i - 1], function() {
     console.log('Loaded ' + i);
 
     if (window.onload) {
@@ -92,6 +91,10 @@ $(document).ready(function() {
 .explanation + .explanation {
 margin-left:5em;
 }
+h1 {
+    margin:0;
+    padding:0;
+}
     </style>
   </head>
   <body>
@@ -109,8 +112,7 @@ margin-left:5em;
         </div>
         <div class="explanation">
             <h1>Explanation B</h1>
-            <main>
-            </main>
+            <div class="figure"></div>
         </div>
     </div>
   </body>
