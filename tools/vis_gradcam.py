@@ -328,6 +328,7 @@ def main():
             output_dir_original += '_original'
             os.makedirs(output_dir_original, exist_ok=True)
             save_path_original = generate_save_path(output_dir_original, gradcam_kwargs, ext='jpg')
+            logger.info('Saving {} original at {}...'.format(args.vis_mode, save_path_original))
             cv2.imwrite(save_path_original, raw_image)
 
             if crop_size and pixel_i and pixel_j:
