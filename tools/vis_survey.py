@@ -90,8 +90,17 @@ $(document).ready(function() {
         <a href="#" id="next">next (<span>-1</span>)</a>
       </p>
     </header>
-    <main>
-    </main>
+    <div class="comparison">
+        <div class="explanation">
+        <h1>Explanation A</h1>
+            (gradCAM for segmentation)
+        </div>
+        <div class="explanation">
+            <h1>Explanation B</h1>
+            <main>
+            </main>
+        </div>
+    </div>
   </body>
 </html>
 
