@@ -325,7 +325,7 @@ def main():
             else:
                 save_gradcam(save_path, gradcam_region, raw_image, minimum=minimum, maximum=maximum, save_npy=not args.skip_save_npy)
 
-            output_dir_original += '_original'
+            output_dir_original = output_dir + '_original'
             os.makedirs(output_dir_original, exist_ok=True)
             save_path_original = generate_save_path(output_dir_original, gradcam_kwargs, ext='jpg')
             logger.info('Saving {} original at {}...'.format(args.vis_mode, save_path_original))
