@@ -31,6 +31,7 @@ function select(i, dontPushHistory) {
   $('svg').remove();
   $('main').load(files[i - 1], function() {
     console.log('Loaded ' + i);
+    window.onload();
   })
 
   if (i <= 1) {
