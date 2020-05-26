@@ -209,7 +209,7 @@ margin-right:10px;
         <a href="#" id="next">next (<span>-1</span>) &raquo;</a>
       </p>
       <div class="colorbar">
-      <span>Pixel Importance:</span>
+      <span>Pixel Importance (applies to both explanations):</span>
       <img src="colormap.png">
       </div>
     </header>
