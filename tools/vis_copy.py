@@ -43,7 +43,9 @@ if args.dirs_for_cls:
     dir_to_var[next(glob.iglob(f'*{args.dirs_for_cls}*original'))] = 'original'
 else:
     dir_to_var = {dir: var for (dir, var) in args.dir}
-print(dir_to_var)
+
+for dir in sorted(dir_to_var):
+    print(dir, ':', dir_to_var[dir])
 
 paths_per_fnames = paths_from_directories(dir_to_var, args.file,
     filt=lambda path: 'pixel' in path)
