@@ -126,7 +126,7 @@ p, h1 {
 }
 .explanation {
     flex:1;
-    padding:1em 2.5em;
+    padding:0.25em 2.5em;
 }
 .explanation + .explanation {
 border-left:2px solid #eee;
@@ -134,14 +134,17 @@ border-left:2px solid #eee;
 h1 {
     margin:0;
     padding:0;
-    margin-bottom:0.25em;
 }
 .row {
+    margin-top:0.25em;
     display:flex;
-    flex-direction:column;
+    flex-direction:row;
 }
 .col img {
-    max-width:200px;
+    max-width:150px;
+}
+.col + .col {
+    margin-left:0.25em;
 }
 .curr {
 margin:0 1em;
