@@ -62,6 +62,7 @@ function select(i, dontPushHistory) {
 
   var file = files[i - 1];
   el_a.html('<div class="row"><div class="col"><img src="' + file['baseline_original'] + '"><img class="cover original-cover" src="original.png"><p><b>1. Start here</b><br/>Goal: Classify center</br> pixel.</p></div><div class="col"><img src="' + file['baseline'] + '"><img class="cover final-cover" src="final.png"><p><b>2. Prediction<b><br/>' + file['cls'] + '</p></div></div>');
+  el_b.html('Loading...');
   el_b.load(file['ours'], function() {
     console.log('Loaded ' + i);
 
