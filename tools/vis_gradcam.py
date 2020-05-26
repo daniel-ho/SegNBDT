@@ -380,6 +380,9 @@ def main():
             maximum, minimum = -1000, 0
             logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
 
+            if args.crop_for and class_names.index(args.crop_for) not in label:
+                continue
+
             if getattr(Saliency, 'whole_image', False):
                 assert not (
                         args.pixel_i or args.pixel_j or args.pixel_i_range
