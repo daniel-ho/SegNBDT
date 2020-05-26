@@ -381,6 +381,7 @@ def main():
             logger.info(f'=> Starting bounds: ({minimum}, {maximum})')
 
             if args.crop_for and class_names.index(args.crop_for) not in label:
+                print(f'Skipping image {image_index} because no {args.crop_for} found')
                 continue
 
             if getattr(Saliency, 'whole_image', False):
