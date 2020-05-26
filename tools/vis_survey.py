@@ -1,9 +1,26 @@
 import os
 from jinja2 import Template
 import sys
+import argparse
+from pathlib import Path
 
 
-files = sys.argv[1:]
+parser = argparse.ArgumentParser()
+parser.add_argument('--a', nargs='*')
+parser.add_argument('--b', nargs='*')
+args = parser.parse_args()
+
+# attempts to match stem
+stem_to_path = {}
+for a in args.a:
+    stem_to_path[Path(a).stem] = [a]
+
+for b in args.b:
+    stem = Path(b).stem
+    if stem in stem_to_path:
+        stem_to_path[stem].append(b)
+
+files = [value for value in stem_to_path.values() if len(value) == 2]
 
 template = Template(
 """
@@ -19,7 +36,7 @@ template = Template(
 var index = -1;
 var files = [
     {% for file in files %}
-        '{{ file }}',
+        {a: '{{ file[0] }}', b: '{{ file[1] }}'},
     {% endfor %}
 ];
 
@@ -28,7 +45,9 @@ function select(i, dontPushHistory) {
   index = i;
   $('#curr').html(i);
 
-  $('div.figure').load(files[i - 1], function() {
+  var file = files[i - 1];
+  $('div#figure-a').html('<img src="' + file['a'] + '"><p>Goal: Classify center pixel.</p><p>Prediction: Car</p>');
+  $('div#figure-b').load(file['b'], function() {
     console.log('Loaded ' + i);
 
     if (window.onload) {
@@ -108,11 +127,11 @@ h1 {
     <div class="comparison">
         <div class="explanation">
         <h1>Explanation A</h1>
-            (gradCAM for segmentation)
+            <div id="figure-a"></div>
         </div>
         <div class="explanation">
             <h1>Explanation B</h1>
-            <div class="figure"></div>
+            <div id="figure-b"></div>
         </div>
     </div>
   </body>
