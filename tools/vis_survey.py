@@ -18,7 +18,7 @@ for a in args.baseline:
 
 for a2 in args.baseline_original:
     stem_to_path[Path(a2).stem].append(a2)
-    
+
 
 for b in args.ours:
     stem = Path(b).stem
@@ -115,7 +115,6 @@ $(document).ready(function() {
     </script>
     <style>
 header {
-    text-align:center;
     font-size:1.25em;
     padding:0.1em 0;
     position:fixed;
@@ -125,6 +124,15 @@ header {
     box-shadow: 0 0 1em rgba(0,0,0,0.3);
     z-index:100;
     background-color:#FFF;
+    display:flex;
+    justify-content:space-between;
+}
+header img {
+    margin-top:14px;
+    width:300px;
+    height:30px;
+    border:2px solid #cccccc;
+    margin-right:20px;
 }
 p, h1 {
     font-family:"Cormorant Garamond";
@@ -179,15 +187,30 @@ margin:0 1em;
     color:#000;
     background-color:#ccc;
 }
+.nav {
+margin-left:20px;
+}
+.colorbar {
+display:flex;
+}
+.colorbar span {
+margin-top:25px;
+font-size:0.8em;
+margin-right:10px;
+}
     </style>
   </head>
   <body>
     <header>
-      <p>
+      <p class="nav">
         <a href="#" id="prev">&laquo; prev (<span>-1</span>)</a>
         <span class="curr"><b id="curr">-1</b> of <span id="total">-1</span></span>
         <a href="#" id="next">next (<span>-1</span>) &raquo;</a>
       </p>
+      <div class="colorbar">
+      <span>Pixel Importance:</span>
+      <img src="colormap.png">
+      </div>
     </header>
     <div class="comparison">
         <div class="explanation">
