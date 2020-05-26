@@ -121,7 +121,8 @@ def save_gradcam(save_path, gradcam, raw_image, paper_cmap=False,
         minimum=None, maximum=None, save_npy=True):
     gradcam = gradcam.cpu().numpy()
     np_save_path = save_path.replace('.jpg', '.npy')
-    np.save(np_save_path, gradcam)
+    if save_npy:
+        np.save(np_save_path, gradcam)
     gradcam = GradCAM.normalize_np(gradcam, minimum=minimum, maximum=maximum)[0,0]
     cmap = cm.hot(gradcam)[..., 2::-1] * 255.0
     if paper_cmap:
@@ -342,7 +343,8 @@ def main():
             os.makedirs(output_dir, exist_ok=True)
             save_path_overlap = generate_save_path(output_dir, gradcam_kwargs, ext='npy')
             save_path_plot = generate_save_path(output_dir, gradcam_kwargs, ext='jpg')
-            logger.info('Saving {} overlap data at {}...'.format(args.vis_mode, save_path_overlap))
+            if not args.skip_save_npy:
+                logger.info('Saving {} overlap data at {}...'.format(args.vis_mode, save_path_overlap))
             logger.info('Saving {} overlap plot at {}...'.format(args.vis_mode, save_path_plot))
             save_overlap(save_path_overlap, save_path_plot, gradcam_region, label, save_npy=not args.skip_save_npy)
         if len(heatmaps) > 1:
