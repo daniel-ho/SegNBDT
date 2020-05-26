@@ -171,12 +171,13 @@ def compute_overlap(label, gradcam):
     cls_to_mass.pop(255)  # the 'ignore' label
     return cls_to_mass
 
-def save_overlap(save_path_overlap, save_path_plot, gradcam, label, k=5):
+def save_overlap(save_path_overlap, save_path_plot, gradcam, label, k=5, save_npy=True):
     overlap = compute_overlap(label, gradcam)
     max_keys = list(reversed(sorted(overlap, key=lambda key: overlap[key])))[:k]
     max_labels = [class_names[key] for key in max_keys]
     max_values = [overlap[key] for key in max_keys]
-    np.save(save_path_overlap, overlap)
+    if save_npy:
+        np.save(save_path_overlap, overlap)
 
     plt.figure()
     plt.title('Average saliency per class')
@@ -343,7 +344,7 @@ def main():
             save_path_plot = generate_save_path(output_dir, gradcam_kwargs, ext='jpg')
             logger.info('Saving {} overlap data at {}...'.format(args.vis_mode, save_path_overlap))
             logger.info('Saving {} overlap plot at {}...'.format(args.vis_mode, save_path_plot))
-            save_overlap(save_path_overlap, save_path_plot, gradcam_region, label)
+            save_overlap(save_path_overlap, save_path_plot, gradcam_region, label, save_npy=not args.skip_save_npy)
         if len(heatmaps) > 1:
             combined = torch.prod(torch.stack(heatmaps, dim=0), dim=0)
             combined /= combined.max()
