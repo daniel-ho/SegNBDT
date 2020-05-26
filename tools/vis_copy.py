@@ -47,6 +47,7 @@ print(dir_to_var)
 
 paths_per_fnames = paths_from_directories(dir_to_var, args.file,
     filt=lambda path: 'pixel' in path)
+print('Paths:', len(paths_per_fnames))
 for paths_per_fname in paths_per_fnames:
     context = {}
     for path in paths_per_fname:
