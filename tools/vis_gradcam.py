@@ -426,8 +426,10 @@ def main():
                 logger.info(f'Running {args.vis_mode} on image {image_index} at pixel ({pixel_i},{pixel_j}). Using filename suffix: {args.suffix}')
                 output_pixel_i, output_pixel_j = compute_output_coord(pixel_i, pixel_j, test_size, pred_probs.shape[2:])
 
-                if args.crop_size <= 0:
+                if not getattr(Saliency, 'whole_image', False):
                     gradcam.backward(pred_labels[:, [0], :, :], output_pixel_i, output_pixel_j)
+
+                if args.crop_size <= 0:
                     generate_and_save_saliency(image_index)
                 else:
                     generate_and_save_saliency(image_index, pixel_i, pixel_j, args.crop_size)
