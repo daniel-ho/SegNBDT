@@ -225,3 +225,8 @@ class SegGradCAMWhole(_SegWholeWrapper, SegGradCAM):
 class SegNormGradWhole(_SegWholeWrapper, SegNormGrad):
 
     whole_image = True
+
+
+class SegOGGradCAMWhole(GradCAM):
+
+    whole_image = True

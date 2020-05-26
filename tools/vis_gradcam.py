@@ -39,7 +39,8 @@ def parse_args():
                         required=True,
                         type=str)
     parser.add_argument('--vis-mode', type=str, default='GradCAM',
-                        choices=['GradCAM','NormGrad','GradCAMWhole','NormGradWhole'],
+                        choices=['GradCAM','NormGrad','GradCAMWhole',
+                            'NormGradWhole', 'OGGradCAM'],
                         help='Type of gradient visualization')
     parser.add_argument('--image-index', type=int, default=0,
                         help='Index of input image for GradCAM')
@@ -68,6 +69,8 @@ def parse_args():
     parser.add_argument('--nbdt-node-wnids-for', type=str,
                         help='Class NAME. Automatically computes nodes leading '
                              'up to particular class leaf.')
+    parser.add_argument('--crop-for', action='store_true',
+                        help='Class to crop for')
     parser.add_argument('--nbdt-node-wnid', type=str, default='', nargs='*',
                         help='WNID of NBDT node from which to compute output logits')
     parser.add_argument('opts',
@@ -389,8 +392,8 @@ def main():
                 if args.crop_size <= 0:
                     continue
 
-            if cls:
-                cls_index = class_names.index(cls)
+            if args.crop_for:
+                cls_index = class_names.index(args.crop_for)
                 label = torch.Tensor(label).to(pred_labels.device)
                 # is_right_class = pred_labels[0,0,:,:] == cls_index
                 # is_correct = pred_labels == label
