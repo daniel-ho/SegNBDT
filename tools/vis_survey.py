@@ -6,21 +6,25 @@ from pathlib import Path
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--a', nargs='*')
-parser.add_argument('--b', nargs='*')
+parser.add_argument('--baseline', nargs='*')
+parser.add_argument('--baseline-original', nargs='*')
+parser.add_argument('--ours', nargs='*')
 args = parser.parse_args()
 
 # attempts to match stem
 stem_to_path = {}
-for a in args.a:
+for a in args.baseline:
     stem_to_path[Path(a).stem] = [a]
 
-for b in args.b:
+for a2 in args.baseline_original:
+    stem_to_path[Path(a2).stem].append(a2)
+
+for b in args.ours:
     stem = Path(b).stem
     if stem in stem_to_path:
         stem_to_path[stem].append(b)
 
-files = [value for value in stem_to_path.values() if len(value) == 2]
+files = [value for value in stem_to_path.values() if len(value) == 3]
 
 template = Template(
 """
@@ -36,7 +40,7 @@ template = Template(
 var index = -1;
 var files = [
     {% for file in files %}
-        {a: '{{ file[0] }}', b: '{{ file[1] }}'},
+        {baseline: '{{ file[0] }}', baseline_original: '{{ file[1] }}', ours: '{{ file[2] }}'},
     {% endfor %}
 ];
 
@@ -46,8 +50,8 @@ function select(i, dontPushHistory) {
   $('#curr').html(i);
 
   var file = files[i - 1];
-  $('div#figure-a').html('<img src="' + file['a'] + '"><p>Goal: Classify center pixel.</p><p>Prediction: Car</p>');
-  $('div#figure-b').load(file['b'], function() {
+  $('div#figure-a').html('<div class="row"><div class="col"><img src="' + file['baseline_original'] + '"><p><b>1. Start here</b><br/>Goal: Classify center pixel.</p></div><div class="col"><img src="' + file['baseline'] + '"><p><b>2. Prediction<b><br/>Car</p></div></div>');
+  $('div#figure-b').load(file['ours'], function() {
     console.log('Loaded ' + i);
 
     if (window.onload) {
@@ -100,28 +104,68 @@ $(document).ready(function() {
 });
     </script>
     <style>
+header {
+    text-align:center;
+    font-size:1.25em;
+    padding:0.1em 0;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    box-shadow: 0 0 1em rgba(0,0,0,0.3);
+    z-index:100;
+    background-color:#FFF;
+}
+p, h1 {
+    font-family:"Cormorant Garamond";
+}
 .comparison {
     display:flex;
     flex-direction:row;
+    margin-top: 5.5em;
 }
 .explanation {
     flex:1;
+    padding:1em 2.5em;
 }
 .explanation + .explanation {
-margin-left:5em;
+border-left:2px solid #eee;
 }
 h1 {
     margin:0;
     padding:0;
+    margin-bottom:0.25em;
+}
+.row {
+    display:flex;
+    flex-direction:column;
+}
+.col img {
+    max-width:200px;
+}
+.curr {
+margin:0 1em;
+}
+#prev, #next {
+    background-color:#eee;
+    margin-top:-0.5em;
+    padding:0.5em;
+    border-radius:0.2em;
+    color:#666;
+    text-decoration:none;
+}
+#prev:hover, #next:hover {
+    color:#000;
+    background-color:#ccc;
 }
     </style>
   </head>
   <body>
     <header>
       <p>
-        <span>Figure ID: <b id="curr">-1</b> of <span id="total">-1</span></span>
-        <a href="#" id="prev">prev (<span>-1</span>)</a>
-        <a href="#" id="next">next (<span>-1</span>)</a>
+        <a href="#" id="prev">&laquo; prev (<span>-1</span>)</a>
+        <span class="curr"><b id="curr">-1</b> of <span id="total">-1</span></span>
+        <a href="#" id="next">next (<span>-1</span>) &raquo;</a>
       </p>
     </header>
     <div class="comparison">
