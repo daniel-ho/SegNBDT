@@ -49,9 +49,19 @@ function select(i, dontPushHistory) {
   index = i;
   $('#curr').html(i);
 
+  var el_a = $('div#figure-a');
+  var el_b = $('div#figure-b');
+
+  console.log(i % 2);
+  if (i % 2 == 0) {
+    tmp = el_a;
+    el_a = el_b;
+    el_b = tmp;
+  }
+
   var file = files[i - 1];
-  $('div#figure-a').html('<div class="row"><div class="col"><img src="' + file['baseline_original'] + '"><p><b>1. Start here</b><br/>Goal: Classify center pixel.</p></div><div class="col"><img src="' + file['baseline'] + '"><p><b>2. Prediction<b><br/>Car</p></div></div>');
-  $('div#figure-b').load(file['ours'], function() {
+  el_a.html('<div class="row"><div class="col"><img src="' + file['baseline_original'] + '"><p><b>1. Start here</b><br/>Goal: Classify center pixel.</p></div><div class="col"><img src="' + file['baseline'] + '"><p><b>2. Prediction<b><br/>Car</p></div></div>');
+  el_b.load(file['ours'], function() {
     console.log('Loaded ' + i);
 
     if (window.onload) {
