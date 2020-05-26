@@ -29,6 +29,7 @@ parser.add_argument('template', help='Jinja2 template HTML')
 parser.add_argument('--dirs-for-cls', type=str)
 parser.add_argument('--dir', nargs=2, action='append', help='Dir name, then the var in the Jinja2 template to replace')
 parser.add_argument('--file', choices=('sort', 'match'), default='match')
+parser.add_argument('--suffix', type=str, help='Suffix for all output file names')
 args = parser.parse_args()
 
 
@@ -58,6 +59,6 @@ for paths_per_fname in paths_per_fnames:
         context[var] = str(path)
 
     stem = Path(paths_per_fname[0]).stem
-    path = f'{stem}.html'
+    path = f'{stem}{args.suffix}.html'
     with open(path, 'w') as f:
         f.write(template.render(**context))

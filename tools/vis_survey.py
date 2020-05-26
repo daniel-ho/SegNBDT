@@ -19,13 +19,14 @@ for a in args.baseline:
 for a2 in args.baseline_original:
     stem_to_path[Path(a2).stem].append(a2)
 
-
 for b in args.ours:
     stem = Path(b).stem
+    cls = stem.split('-')[6]
+    stem = stem.replace(f'-{cls}', '', 1)
     if stem in stem_to_path:
-        stem_to_path[stem].append(b)
+        stem_to_path[stem].extend((cls, b))
 
-files = [value for value in stem_to_path.values() if len(value) == 3]
+files = [value for value in stem_to_path.values() if len(value) == 4]
 
 template = Template(
 """
@@ -41,7 +42,7 @@ template = Template(
 var index = -1;
 var files = [
     {% for file in files %}
-        {baseline: '{{ file[0] }}', baseline_original: '{{ file[1] }}', ours: '{{ file[2] }}'},
+        {baseline: '{{ file[0] }}', baseline_original: '{{ file[1] }}', cls: '{{ file[2] }}', ours: '{{ file[3] }}'},
     {% endfor %}
 ];
 
@@ -60,7 +61,7 @@ function select(i, dontPushHistory) {
   }
 
   var file = files[i - 1];
-  el_a.html('<div class="row"><div class="col"><img src="' + file['baseline_original'] + '"><img class="cover original-cover" src="original.png"><p><b>1. Start here</b><br/>Goal: Classify center</br> pixel.</p></div><div class="col"><img src="' + file['baseline'] + '"><img class="cover final-cover" src="final.png"><p><b>2. Prediction<b><br/>Car</p></div></div>');
+  el_a.html('<div class="row"><div class="col"><img src="' + file['baseline_original'] + '"><img class="cover original-cover" src="original.png"><p><b>1. Start here</b><br/>Goal: Classify center</br> pixel.</p></div><div class="col"><img src="' + file['baseline'] + '"><img class="cover final-cover" src="final.png"><p><b>2. Prediction<b><br/>' + file['cls'] + '</p></div></div>');
   el_b.load(file['ours'], function() {
     console.log('Loaded ' + i);
 
