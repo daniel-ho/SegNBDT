@@ -183,6 +183,7 @@ def save_overlap(save_path_overlap, save_path_plot, gradcam, label, k=5):
     plt.barh(max_labels, max_values)
     plt.xlabel('Average Pixel Normalized Saliency')
     plt.savefig(save_path_plot)
+    plt.close()
 
 def get_image_indices(image_index, image_index_range):
     if image_index_range:
@@ -443,6 +444,7 @@ def main():
         run()
 
     if not nbdt_node_wnids:
+        nbdt_node_wnid = None
         run()
 
 
