@@ -26,7 +26,7 @@ from config import config
 from config import update_config
 from core.function import testval
 from utils.gradcam import SegGradCAM, SegNormGrad, GradCAM, SegGradCAMWhole, \
-    SegNormGradWhole
+    SegNormGradWhole, SegOGGradCAM
 from utils.modelsummary import get_model_summary
 from utils.utils import create_logger
 from collections import defaultdict
@@ -69,7 +69,7 @@ def parse_args():
     parser.add_argument('--nbdt-node-wnids-for', type=str,
                         help='Class NAME. Automatically computes nodes leading '
                              'up to particular class leaf.')
-    parser.add_argument('--crop-for', action='store_true',
+    parser.add_argument('--crop-for', type=str,
                         help='Class to crop for')
     parser.add_argument('--nbdt-node-wnid', type=str, default='', nargs='*',
                         help='WNID of NBDT node from which to compute output logits')
