@@ -1,4 +1,4 @@
-# High-resolution networks (HRNets) for Semantic Segmentation 
+# High-resolution networks (HRNets) for Semantic Segmentation
 
 ## NBDT Notes
 - Use PyTorch 1.4 in order to use NBDT code (already included in requirements.txt)
@@ -6,6 +6,347 @@
 [Correct Pascal Context Links]
 https://github.com/zhanghang1989/PyTorch-Encoding/blob/master/scripts/prepare_pcontext.py
 https://github.com/zhanghang1989/detail-api
+
+1. Generate saliency maps
+
+<summary>
+
+NBDT
+```
+for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_light; do
+	python tools/vis_gradcam.py \
+			--cfg experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024_tsw10.yaml \
+			--vis-mode GradCAMWhole \
+			--crop-size 400 \
+			--pixel-max-num-random 1 \
+			--image-index-range 0 200 1 \
+			--nbdt-node-wnids-for ${cls} \
+			--crop-for ${cls} \
+			--skip-save-npy \
+			--target-layers last_layer.3 \
+				TEST.MODEL_FILE output/cityscapes/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10/best.pth \
+				NBDT.USE_NBDT True;
+done;
+```
+baseline
+```
+for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_light; do
+		python tools/vis_gradcam.py \
+				--cfg experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024.yaml \
+				--vis-mode OGGradCAM \
+				--crop-size 400 \
+				--pixel-max-num-random 1 \
+				--image-index-range 0 250 1 \
+				--crop-for ${cls} \
+				--skip-save-npy \
+				--target-layers last_layer.3 \
+					TEST.MODEL_FILE output/cityscapes/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10/best.pth
+done;
+```
+
+</summary>
+
+2. Generate templates
+
+<summary>
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+		--vis-hide f00000030 f00000031 f00000034 \
+		--vis-node-conf f00000032 below.dy 300 \
+		--vis-node-conf f00000032 below.href '{{ f00000032 }}' \
+		--vis-node-conf f00000032 below.label '5. Car? Yes.' \
+		--vis-node-conf f00000032 below.sublabel 'Finds headlights, tires' \
+		--vis-node-conf f00000033 below.href '{{ f00000033 }}' \
+		--vis-node-conf f00000033 below.label '4. Pavement? No.' \
+		--vis-node-conf f00000035 below.dy 250 \
+		--vis-node-conf f00000035 below.href '{{ f00000035 }}' \
+		--vis-node-conf f00000035 below.label '3. Landscape? No.' \
+		--vis-node-conf f00000036 below.dy 250 \
+		--vis-node-conf f00000036 below.href '{{ f00000036 }}' \
+		--vis-node-conf f00000036 below.label '2. Road? No.' \
+		--vis-node-conf f00000036 left.href '{{ original }}' \
+		--vis-node-conf f00000036 left.label '1. Start here' \
+		--vis-node-conf f00000036 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to car \
+		--vis-below-dy 375 \
+		--vis-scale 0.8 \
+		--vis-margin-top -125 \
+		--vis-height 500 \
+		--vis-width 900
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+		--vis-hide f00000033 \
+		--vis-node-conf f00000034 below.href '{{ f00000034 }}' \
+		--vis-node-conf f00000034 below.label '4. Building? Yes.' \
+		--vis-node-conf f00000035 below.href '{{ f00000035 }}' \
+		--vis-node-conf f00000035 below.label '3. Landscape? Yes.' \
+		--vis-node-conf f00000036 below.href '{{ f00000036 }}' \
+		--vis-node-conf f00000036 below.label '2. Road? No.' \
+		--vis-node-conf f00000036 left.href '{{ original }}' \
+		--vis-node-conf f00000036 left.label '1. Start here' \
+		--vis-node-conf f00000036 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to building \
+		--vis-below-dy 250 \
+		--vis-scale 0.8 \
+		--vis-margin-top -50 \
+		--vis-height 450 \
+		--vis-width 800
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+    --vis-root f00000031 \
+		--vis-hide n00002684 f00000028 \
+		--vis-node-conf f00000031 below.href '{{ f00000031 }}' \
+		--vis-node-conf f00000031 below.label '2. Person or bike? No.' \
+		--vis-node-conf f00000031 below.sublabel 'Looks for person, wheel' \
+		--vis-node-conf f00000029 below.href '{{ f00000029 }}' \
+		--vis-node-conf f00000029 below.label '3. Pole-like? No.' \
+		--vis-node-conf n03100490 below.dy 350 \
+		--vis-node-conf n03100490 below.href '{{ n03100490 }}' \
+		--vis-node-conf n03100490 below.label '4. Truck? No.' \
+		--vis-node-conf n04019101 below.href '{{ n04019101 }}' \
+		--vis-node-conf n04019101 below.label '5. Bus? Yes.' \
+		--vis-node-conf f00000031 left.href '{{ original }}' \
+		--vis-node-conf f00000031 left.label '1. Start here' \
+		--vis-node-conf f00000031 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to bus \
+		--vis-below-dy 250 \
+		--vis-scale 0.8 \
+		--vis-margin-top -125 \
+		--vis-height 500 \
+		--vis-width 800
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+		--vis-hide f00000032 n00001930 f00000034 \
+		--vis-node-conf f00000030 below.dy 400 \
+		--vis-node-conf f00000030 below.href '{{ f00000030 }}' \
+		--vis-node-conf f00000030 below.label '5. Sidewalk? Yes.' \
+		--vis-node-conf f00000033 below.dy 350 \
+		--vis-node-conf f00000033 below.href '{{ f00000033 }}' \
+		--vis-node-conf f00000033 below.label '4. Pavement? Yes.' \
+		--vis-node-conf f00000035 below.href '{{ f00000035 }}' \
+		--vis-node-conf f00000035 below.label '3. Landscape? No.' \
+		--vis-node-conf f00000036 below.href '{{ f00000036 }}' \
+		--vis-node-conf f00000036 below.label '2. Road? No.' \
+		--vis-node-conf f00000036 left.href '{{ original }}' \
+		--vis-node-conf f00000036 left.label '1. Start here' \
+		--vis-node-conf f00000036 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to sidewalk \
+		--vis-below-dy 250 \
+		--vis-scale 0.8 \
+		--vis-margin-top -125 \
+		--vis-height 500 \
+		--vis-width 900
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+		--vis-hide f00000033 \
+		--vis-node-conf f00000034 below.href '{{ f00000034 }}' \
+		--vis-node-conf f00000034 below.label '4. Building? No.' \
+		--vis-node-conf f00000035 below.href '{{ f00000035 }}' \
+		--vis-node-conf f00000035 below.label '3. Landscape? Yes.' \
+		--vis-node-conf f00000036 below.href '{{ f00000036 }}' \
+		--vis-node-conf f00000036 below.label '2. Road? No.' \
+		--vis-node-conf f00000036 left.href '{{ original }}' \
+		--vis-node-conf f00000036 left.label '1. Start here' \
+		--vis-node-conf f00000036 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to vegetation \
+		--vis-below-dy 250 \
+		--vis-scale 0.8 \
+		--vis-margin-top -100 \
+		--vis-height 400 \
+		--vis-width 800
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+		--vis-root f00000031 \
+		--vis-hide f00000029 n04576211 \
+		--vis-node-conf n00003553 below.dy 250 \
+		--vis-node-conf n00003553 below.href '{{ n00003553 }}' \
+		--vis-node-conf n00003553 below.label '4. Rider? Yes.' \
+		--vis-node-conf n00002684 below.dy 350 \
+		--vis-node-conf n00002684 below.href '{{ n00002684 }}' \
+		--vis-node-conf n00002684 below.label '3. Cyclist? Yes.' \
+		--vis-node-conf f00000031 below.dy 250 \
+		--vis-node-conf f00000031 below.href '{{ f00000031 }}' \
+		--vis-node-conf f00000031 below.label '2. People? Yes.' \
+		--vis-node-conf f00000031 left.href '{{ original }}' \
+		--vis-node-conf f00000031 left.label '1. Start here' \
+		--vis-node-conf f00000031 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to rider \
+		--vis-below-dy 375 \
+		--vis-scale 0.8 \
+		--vis-margin-top -75 \
+		--vis-height 400 \
+		--vis-width 900
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+		--vis-root f00000033 \
+		--vis-hide f00000032 f00000034 \
+		--vis-node-conf n04341686 below.dy 200 \
+		--vis-node-conf n04341686 below.href '{{ n04341686 }}' \
+		--vis-node-conf n04341686 below.label '5. Wall? Yes.' \
+		--vis-node-conf n00001930 below.dy 250 \
+		--vis-node-conf n00001930 below.href '{{ n00001930 }}' \
+		--vis-node-conf n00001930 below.label '4. Structure? Yes.' \
+		--vis-node-conf f00000030 below.dy 350 \
+		--vis-node-conf f00000030 below.href '{{ f00000030 }}' \
+		--vis-node-conf f00000030 below.label '3. Verge? No.' \
+		--vis-node-conf f00000033 below.href '{{ f00000033 }}' \
+		--vis-node-conf f00000033 below.label '2. Pavement? No.' \
+		--vis-node-conf f00000033 left.href '{{ original }}' \
+		--vis-node-conf f00000033 left.label '1. Start here' \
+		--vis-node-conf f00000033 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to wall \
+		--vis-below-dy 250 \
+		--vis-scale 0.8 \
+		--vis-margin-top -75 \
+		--vis-height 400 \
+		--vis-width 900
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+		--vis-root f00000031 \
+		--vis-hide f00000029 \
+		--vis-node-conf n04576211 below.dy 200 \
+		--vis-node-conf n04576211 below.href '{{ n04576211 }}' \
+		--vis-node-conf n04576211 below.label '5. Bicycle? Yes.' \
+		--vis-node-conf n00003553 below.dy 250 \
+		--vis-node-conf n00003553 below.href '{{ n00003553 }}' \
+		--vis-node-conf n00003553 below.label '4. Rider? No.' \
+		--vis-node-conf n00002684 below.dy 350 \
+		--vis-node-conf n00002684 below.href '{{ n00002684 }}' \
+		--vis-node-conf n00002684 below.label '3. Cyclist? Yes.' \
+		--vis-node-conf f00000031 below.dy 250 \
+		--vis-node-conf f00000031 below.href '{{ f00000031 }}' \
+		--vis-node-conf f00000031 below.label '2. People? Yes.' \
+		--vis-node-conf f00000031 left.href '{{ original }}' \
+		--vis-node-conf f00000031 left.label '1. Start here' \
+		--vis-node-conf f00000031 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to bicycle \
+		--vis-below-dy 375 \
+		--vis-scale 0.8 \
+		--vis-margin-top -75 \
+		--vis-height 400 \
+		--vis-width 900
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+    --vis-root f00000031 \
+		--vis-hide n03100490 n00002684 n00033020 n00001740 \
+		--vis-node-conf f00000031 below.href '{{ f00000031 }}' \
+		--vis-node-conf f00000031 below.label '2. Person or bike? No.' \
+		--vis-node-conf f00000031 below.sublabel 'Looks for person, wheel' \
+		--vis-node-conf f00000031 below.dy 250 \
+		--vis-node-conf f00000029 below.href '{{ f00000029 }}' \
+		--vis-node-conf f00000029 below.label '3. Pole-like? Yes.' \
+		--vis-node-conf f00000029 below.dy 225 \
+		--vis-node-conf f00000028 below.href '{{ f00000028 }}' \
+		--vis-node-conf f00000028 below.label '4. Sky? Yes.' \
+		--vis-node-conf f00000031 left.href '{{ original }}' \
+		--vis-node-conf f00000031 left.label '1. Start here' \
+		--vis-node-conf f00000031 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to sky \
+		--vis-below-dy 200 \
+		--vis-scale 0.8 \
+		--vis-margin-top -62 \
+		--vis-height 325 \
+		--vis-width 900
+```
+
+```
+nbdt-hierarchy \
+		--path graph-induced-hrnet_w18_small_v1_cityscapes_cls19_1024x2048_trainset.json \
+		--vis-no-color-leaves \
+		--vis-out-fname template \
+    --vis-root f00000029 \
+		--vis-hide n03100490 n00002684 \
+		--vis-node-conf f00000029 below.href '{{ f00000029 }}' \
+		--vis-node-conf f00000029 below.label '3. Pole-like? Yes.' \
+		--vis-node-conf f00000029 below.dy 225 \
+		--vis-node-conf f00000028 below.href '{{ f00000028 }}' \
+		--vis-node-conf f00000028 below.label '4. Sky? No.' \
+		--vis-node-conf n00001740 below.href '{{ n00001740 }}' \
+		--vis-node-conf n00001740 below.label '5. Pole? No.' \
+		--vis-node-conf n00033020 below.href '{{ n00033020 }}' \
+		--vis-node-conf n00033020 below.label '6. Traffic Light? Yes.' \
+		--vis-node-conf f00000029 left.href '{{ original }}' \
+		--vis-node-conf f00000029 left.label '1. Start here' \
+		--vis-node-conf f00000029 left.sublabel 'Goal: Classify center pixel' \
+		--vis-zoom 1.75 \
+		--vis-color-path-to traffic_light \
+		--vis-below-dy 200 \
+		--vis-scale 0.8 \
+		--vis-margin-top -50 \
+		--vis-height 350 \
+		--vis-width 900
+```
+
+</summary>
+
+3. Generate all figures
+
+```
+for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_light; do python /data/alvinwan/nbdt-segmentation/tools/vis_copy.py template-${cls}.html --dirs-for-cls ${cls} --suffix=-${cls}; done
+```
+
+Optionally generate survey
+
+<summary>
+
+```
+python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls oggradcam*crop400/*` --baseline-original `ls oggradcam*original/*` --ours image*.html
+```
+
+</summary>
 
 ## Branches
 - This is the implementation for PyTorch 1.1.
@@ -21,7 +362,7 @@ https://github.com/zhanghang1989/detail-api
 - Pytorch-v1.1 and the official Sync-BN supported. We have reproduced the cityscapes results on the new codebase. Please check the [pytorch-v1.1 branch](https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/pytorch-v1.1).
 
 ## Introduction
-This is the official code of [high-resolution representations for Semantic Segmentation](https://arxiv.org/abs/1904.04514). 
+This is the official code of [high-resolution representations for Semantic Segmentation](https://arxiv.org/abs/1904.04514).
 We augment the HRNet with a very simple segmentation head shown in the figure below. We aggregate the output representations at four different resolutions, and then use a 1x1 convolutions to fuse these representations. The output representations is fed into the classifier. We evaluate our methods on three datasets, Cityscapes, PASCAL-Context and LIP.
 
 ![](figures/seg-hrnet.png)
@@ -35,10 +376,10 @@ The models are initialized by the weights pretrained on the ImageNet. You can do
 Memory and time cost comparison for semantic segmentation on PyTorch 1.0 in terms of training/inference memory and training/inference time. The numbers for training are obtained on a machine with 4 V100 GPU cards. During training, the input size is 512x1024 and the batch size is 8. The numbers for inference are obtained on a single V100 GPU card. The input size is 1024x2048.
 
 | approach | train mem | train sec./iter |infer. mem | infer sec./image | mIoU |
-| :--: | :--: | :--: | :--: | :--: | :--: | 
-| PSPNet | 14.4G | 0.837| 1.60G | 0.397 | 79.7 | 
-| DeepLabV3 | 13.3G | 0.850 | 1.15G | 0.411 | 78.5 | 
-| HRNet-W48 | 13.9G | 0.692 | 1.79G | 0.150 | 81.1 | 
+| :--: | :--: | :--: | :--: | :--: | :--: |
+| PSPNet | 14.4G | 0.837| 1.60G | 0.397 | 79.7 |
+| DeepLabV3 | 13.3G | 0.850 | 1.15G | 0.411 | 78.5 |
+| HRNet-W48 | 13.9G | 0.692 | 1.79G | 0.150 | 81.1 |
 
 
 ### Big models
@@ -188,8 +529,8 @@ If you find this work or code is helpful in your research, please cite:
 
 @article{WangSCJDZLMTWLX19,
   title={Deep High-Resolution Representation Learning for Visual Recognition},
-  author={Jingdong Wang and Ke Sun and Tianheng Cheng and 
-          Borui Jiang and Chaorui Deng and Yang Zhao and Dong Liu and Yadong Mu and 
+  author={Jingdong Wang and Ke Sun and Tianheng Cheng and
+          Borui Jiang and Chaorui Deng and Yang Zhao and Dong Liu and Yadong Mu and
           Mingkui Tan and Xinggang Wang and Wenyu Liu and Bin Xiao},
   journal   = {TPAMI}
   year={2019}
@@ -197,7 +538,7 @@ If you find this work or code is helpful in your research, please cite:
 ````
 
 ## Reference
-[1] Deep High-Resolution Representation Learning for Visual Recognition. Jingdong Wang, Ke Sun, Tianheng Cheng, 
+[1] Deep High-Resolution Representation Learning for Visual Recognition. Jingdong Wang, Ke Sun, Tianheng Cheng,
     Borui Jiang, Chaorui Deng, Yang Zhao, Dong Liu, Yadong Mu, Mingkui Tan, Xinggang Wang, Wenyu Liu, Bin Xiao. Accepted by TPAMI.  [download](https://arxiv.org/pdf/1908.07919.pdf)
 
 ## Acknowledgement
