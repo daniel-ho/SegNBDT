@@ -7,9 +7,9 @@
 https://github.com/zhanghang1989/PyTorch-Encoding/blob/master/scripts/prepare_pcontext.py
 https://github.com/zhanghang1989/detail-api
 
-1. Generate saliency maps
 
-<summary>
+<details>
+	<summary>1. Generate saliency maps</summary>
 
 NBDT
 ```
@@ -44,11 +44,10 @@ for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_l
 done;
 ```
 
-</summary>
+</details>
 
-2. Generate templates
-
-<summary>
+<details>
+	<summary>2. Generate templates</summary>
 
 ```
 nbdt-hierarchy \
@@ -330,23 +329,24 @@ nbdt-hierarchy \
 		--vis-width 900
 ```
 
-</summary>
+</details>
 
-3. Generate all figures
+<details>
+	<summary>3. Generate all figures</summary>
 
 ```
 for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_light; do python /data/alvinwan/nbdt-segmentation/tools/vis_copy.py template-${cls}.html --dirs-for-cls ${cls} --suffix=-${cls}; done
 ```
+</details>
 
-Optionally generate survey
-
-<summary>
+<details>
+	<summary>Optionally generate survey</summary>
 
 ```
 python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls oggradcam*crop400/*` --baseline-original `ls oggradcam*original/*` --ours image*.html
 ```
 
-</summary>
+</details>
 
 ## Branches
 - This is the implementation for PyTorch 1.1.
