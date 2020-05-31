@@ -29,6 +29,9 @@ class _BaseWrapper(object):
         one_hot.scatter_(1, labels, 1.0)
         return one_hot
 
+    def set_nbdt_node_wnid(self, wnid):
+        self.nbdt_node_wnid = wnid
+
     def forward(self, image):
         self.image_shape = image.shape[2:]
         if self.use_nbdt:
@@ -43,6 +46,7 @@ class _BaseWrapper(object):
             self.logits = node_logits.reshape(n,h,w,node_logits.shape[-1]).permute(0,3,1,2)
         else:
             self.logits = self.model(image)
+        self.logits = F.interpolate(self.logits, self.image_shape)
         self.probs = F.softmax(self.logits, dim=1)
         return self.probs.sort(dim=1, descending=True)  # ordered results
 
@@ -221,3 +225,7 @@ class SegGradCAMWhole(_SegWholeWrapper, SegGradCAM):
 class SegNormGradWhole(_SegWholeWrapper, SegNormGrad):
 
     whole_image = True
+
+
+class SegOGGradCAM(_SegBaseWrapper, GradCAM):
+    pass
