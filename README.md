@@ -1,4 +1,124 @@
-# High-resolution networks (HRNets) for Semantic Segmentation
+# Visual Decision Rules for Segmentation
+
+**Table of Contents**
+
+- [Quickstart: Installation, Running, and Loading](#quickstart)
+- [Convert your own neural network into a decision tree](#convert-neural-networks-to-decision-trees)
+- [Training and Evaluation](#training-and-evaluation)
+- [Results](#results)
+- [Setup for Development](#setup-for-development)
+- [Citation](#citation)
+
+# Quickstart
+
+## Installation
+
+1. Pip install [nbdt](https://github.com/alvinwan/neural-backed-decision-trees):
+```bash
+git clone https://github.com/alvinwan/neural-backed-decision-trees
+pip install nbdt
+```
+2. Clone this repository and install all dependencies:
+```bash
+git clone #TODO: public repo link
+pip install -r requirements.txt
+```
+
+## Dataset Preparation
+
+<details><summary><b>Cityscapes Setup</b> <i>[click to expand]</i></summary>
+<div>
+
+
+
+</div>
+</details>
+
+<details><summary><b>Pascal-Context Setup</b> <i>[click to expand]</i></summary>
+<div>
+
+note: this script downloads pascal context files and installs detail API
+https://github.com/zhanghang1989/PyTorch-Encoding/blob/master/scripts/prepare_pcontext.py
+Install [details](https://github.com/zhanghang1989/detail-api) API for parsing Pascal-Context data
+
+</div>
+</details>
+
+<details><summary><b>Look Into Person Setup</b> <i>[click to expand]</i></summary>
+<div>
+
+
+
+</div>
+</details>
+
+<details><summary><b>ADE20K Setup</b> <i>[click to expand]</i></summary>
+<div>
+
+
+
+</div>
+</details>
+
+The dataset directory will look as follows:
+````bash
+$SEG_ROOT/data
+├── cityscapes
+│   ├── gtFine
+│   │   ├── test
+│   │   ├── train
+│   │   └── val
+│   └── leftImg8bit
+│       ├── test
+│       ├── train
+│       └── val
+├── pascal_ctx
+│   ├── common
+│   ├── PythonAPI
+│   ├── res
+│   └── VOCdevkit
+│       └── VOC2010
+├── lip
+│   ├── TrainVal_images
+│   │   ├── train_images
+│   │   └── val_images
+│   └── TrainVal_parsing_annotations
+│       ├── train_segmentations
+│       ├── train_segmentations_reversed
+│       └── val_segmentations
+├── ade20k
+│   ├── annotations
+│   │   ├── training
+│   │   └── validation
+│   ├── images
+│   │   ├── training
+│   │   └── validation
+│   ├── objectInfo150.txt
+│   └── sceneCategories.txt
+├── list
+│   ├── cityscapes
+│   │   ├── test.lst
+│   │   ├── trainval.lst
+│   │   └── val.lst
+│   ├── lip
+│   │   ├── testvalList.txt
+│   │   ├── trainList.txt
+│   │   └── valList.txt
+│   └── ade20k
+│       ├── training.odgt
+│       └── validation.odgt
+````
+
+
+# Convert Neural Networks to Decision Trees
+
+# Training and Evaluation
+
+# Results
+
+# Setup for Development
+
+# Citation
 
 ## NBDT Notes
 - Use PyTorch 1.4 in order to use NBDT code (already included in requirements.txt)
