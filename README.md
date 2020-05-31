@@ -129,6 +129,8 @@ $SEG_ROOT/data
 
 # Training and Evaluation
 
+Pretrained models for the baselines and NBDT models are provided [here](). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
+
 note: all training scripts assume 4 gpus
 
 general process:
@@ -146,30 +148,6 @@ general process:
 keep as subsection? or move to bigger section
 
 instructions on how to generate seg gradcams
-
-# Results
-
-All models use the HRNetv2-W48 architecture initialized by weights pretrained on ImageNet.
-
-note: remove ade20k? 
-
-|                      | Cityscapes | Pascal-Context | LIP    | ADE20K |
-|----------------------|------------|----------------|--------|--------|
-| NBDT-S (Ours)        | 79.01%     | 49.12%         | 51.64% | 35.83% |
-| NN Baseline          | 81.12%     | 52.54%         | 55.37% | 42.58% |
-| Performance Gap      | 2.11%      | 3.42%          | 3.73%  |  6.75% |
-
-# Setup for Development
-
-# Citation
-
-If you find this work useful for your research, please cite our [paper]():
-
-```
-@add citation
-```
-
-## NBDT Notes
 
 <details>
 	<summary>1. Generate saliency maps</summary>
@@ -511,6 +489,27 @@ python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls oggra
 
 </details>
 
+# Results
+
+All models use the HRNetv2-W48 architecture initialized by weights pretrained on ImageNet. Note that: LIP is evaluated with flip, Pascal-Context is evaluated with multi-scale (0.5,0.75,1.0,1.25,1.5,1.75) and flip. 
+
+note: remove ade20k? 
+
+|                      | Cityscapes | Pascal-Context | LIP    | ADE20K |
+|----------------------|------------|----------------|--------|--------|
+| NBDT-S (Ours)        | 79.01%     | 49.12%         | 51.64% | 35.83% |
+| NN Baseline          | 81.12%     | 52.54%         | 55.37% | 42.58% |
+| Performance Gap      | 2.11%      | 3.42%          | 3.73%  |  6.75% |
+
+# Setup for Development
+
+# Citation
+
+If you find this work useful for your research, please cite our [paper]():
+
+```
+@add citation
+```
 
 ## Segmentation models
 HRNetV2 Segmentation models are now available. All the results are reproduced by using this repo!!!
