@@ -1,5 +1,7 @@
 # Visual Decision Rules for Segmentation
 
+TODO: Intro
+
 **Table of Contents**
 
 - [Quickstart: Installation, Running, and Loading](#quickstart)
@@ -29,7 +31,10 @@ pip install -r requirements.txt
 <details><summary><b>Cityscapes Setup</b> <i>[click to expand]</i></summary>
 <div>
 
-
+1. Create a Cityscapes account [here](https://www.cityscapes-dataset.com/).
+2. Download the following:
+	- Images (leftImg8bit_trainvaltest.zip)
+	- Annotations (gtFine_trainvaltest.zip)
 
 </div>
 </details>
@@ -38,7 +43,9 @@ pip install -r requirements.txt
 <div>
 
 note: this script downloads pascal context files and installs detail API
+
 https://github.com/zhanghang1989/PyTorch-Encoding/blob/master/scripts/prepare_pcontext.py
+
 Install [details](https://github.com/zhanghang1989/detail-api) API for parsing Pascal-Context data
 
 </div>
@@ -47,7 +54,12 @@ Install [details](https://github.com/zhanghang1989/detail-api) API for parsing P
 <details><summary><b>Look Into Person Setup</b> <i>[click to expand]</i></summary>
 <div>
 
+Download the (Single Person) Look Into Person dataset [here](http://sysu-hcp.net/lip/overview.php).
 
+The following zip files are required:
+- TrainVal_images.zip
+- TrainVal_parsing_annotations.zip
+- Train_parsing_reversed_labels.zip
 
 </div>
 </details>
@@ -55,7 +67,7 @@ Install [details](https://github.com/zhanghang1989/detail-api) API for parsing P
 <details><summary><b>ADE20K Setup</b> <i>[click to expand]</i></summary>
 <div>
 
-
+Download the ADE20K dataset [here](https://groups.csail.mit.edu/vision/datasets/ADE20K/).
 
 </div>
 </details>
@@ -115,6 +127,16 @@ $SEG_ROOT/data
 # Training and Evaluation
 
 # Results
+
+All models use the HRNetv2-W48 architecture initialized by weights pre-trained on ImageNet.
+
+note: remove ade20k? 
+
+|                      | Cityscapes | Pascal-Context | LIP    | ADE20K |
+|----------------------|------------|----------------|--------|--------|
+| NBDT-S (Ours)        | 79.01%     | 49.12%         | 51.64% | 35.83% |
+| NN Baseline          | 81.12%     | 52.54%         | 55.37% | 42.58% |
+| Performance Gap      | 2.11%      | 3.42%          | 3.73%  |  6.75% |
 
 # Setup for Development
 
