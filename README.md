@@ -137,7 +137,15 @@ general process:
 - wrap original loss w/ soft loss and train
 - wrap model w/ soft decision rules for eval
 
-Add click to expand section on supporting new dataset (generate wnid + hierarchy)
+TODO: Fill out click to expand section on supporting new dataset (generate wnid + hierarchy)
+
+<details><summary><b>Want to train on a new dataset?</b> <i>[click to expand]</i></summary>
+<div>
+
+generate stuff
+
+</div>
+</details>
 
 TODO: change Seg function names in nbdt repo?
 
@@ -164,8 +172,19 @@ Pretrained models for the baselines and NBDT models are provided [here](). To tr
 
 note: all training scripts assume 4 gpus
 
+## Training
 
-## Visualization Section
+```bash
+training commands
+```
+
+## Evaluation
+
+```bash
+eval commands
+```
+
+## Visualization
 
 keep as subsection? or move to bigger section
 
