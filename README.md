@@ -174,14 +174,26 @@ note: all training scripts assume 4 gpus
 
 ## Training
 
-```bash
-training commands
+Baseline:
+```
+python -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg experiments/cityscapes/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484.yaml
+```
+
+NBDT:
+```
+python -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg experiments/cityscapes/nbdt/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10.yaml
 ```
 
 ## Evaluation
 
-```bash
-eval commands
+```
+python tools/test.py --cfg experiments/cityscapes/nbdt/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw100.yaml
+```
+
+```
+python tools/test.py --cfg experiments/pascal_ctx/nbdt/seg_hrnet_w48_cls59_480x480_sgd_lr4e-3_wd1e-4_bs_16_epoch200_tsw10.yaml \
+                     TEST.SCALE_LIST 0.5,0.75,1.0,1.25,1.5,1.75,2.0 \
+                     TEST.FLIP_TEST True
 ```
 
 ## Visualization
