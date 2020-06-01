@@ -127,12 +127,6 @@ $SEG_ROOT/data
 
 # Convert Neural Networks to Decision Trees
 
-# Training and Evaluation
-
-Pretrained models for the baselines and NBDT models are provided [here](). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
-
-note: all training scripts assume 4 gpus
-
 general process:
 - nbdt repo steps: (basically follow dataset section)
     - add dataloader
@@ -142,6 +136,34 @@ general process:
 - use pretrained model to generate hierarchy
 - wrap original loss w/ soft loss and train
 - wrap model w/ soft decision rules for eval
+
+Add click to expand section on supporting new dataset (generate wnid + hierarchy)
+
+TODO: change Seg function names in nbdt repo?
+
+**To convert your neural network** into a neural-backed decision tree for segmentation:
+
+1. **Train the original neural network with an NBDT loss**. Wrap the original cretion with the NBDT loss. In the example below, we assume the original loss is denoted by `criterion`.
+
+  ```python
+  from nbdt.loss import SoftSegTreeSupLoss
+  criterion = SoftSegTreeSupLoss(config.NBDT.DATASET, criterion,
+      hierarchy=config.NBDT.HIERARCHY, tree_supervision_weight=config.NBDT.TSW)
+  ```
+
+2. **Perform inference or validate using an NBDT model**. Wrap the original model trained in the previous step. In the example below, the original model is denoted by `model` and it is wrapped with the SoftSegNBDT wrapper.
+
+  ```python
+  from nbdt.model import SoftSegNBDT
+  model = SoftSegNBDT(config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY)
+  ```
+
+# Training and Evaluation
+
+Pretrained models for the baselines and NBDT models are provided [here](). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
+
+note: all training scripts assume 4 gpus
+
 
 ## Visualization Section
 
