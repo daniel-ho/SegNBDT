@@ -200,7 +200,24 @@ python tools/test.py --cfg experiments/pascal_ctx/nbdt/seg_hrnet_w48_cls59_480x4
 
 keep as subsection? or move to bigger section
 
-instructions on how to generate seg gradcams
+(inncluded picture of hierarchy, so users can pick a node of choicec for below command)
+
+instructions on how to generate image-wide gradpam. got a node, class, and image in mind? 
+
+```
+python tools/vis_gradcam.py \
+	--cfg experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024_tsw10.yaml \
+	--vis-mode GradCAMWhole \
+	--image-index-range 0 5 1 \
+	--nbdt-node-wnid n00002684 \
+	--skip-save-npy \
+	--target-layers last_layer.3 \
+		TEST.MODEL_FILE output/cityscapes/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10/best.pth \
+		NBDT.USE_NBDT True;
+```
+
+
+instructions on how to generate SegNBDT visual decision rules + gradpams. got a class in mind? automattiaclly finds nodes for that class. runs over a lot of images.
 
 <details>
 	<summary>1. Generate saliency maps</summary>
