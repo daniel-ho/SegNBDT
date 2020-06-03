@@ -10,6 +10,8 @@ import shutil
 import argparse
 import tarfile
 
+from .download_utils import download, mkdir
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Initialize PASCAL Context dataset.')
