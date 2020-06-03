@@ -1,4 +1,4 @@
-# Visual Decision Rules for Segmentation
+# SegNBDT: Visual Decision Rules for Segmentation
 
 TODO: Intro
 
@@ -42,11 +42,19 @@ pip install -r requirements.txt
 <details><summary><b>Pascal-Context Setup</b> <i>[click to expand]</i></summary>
 <div>
 
-note: this script downloads pascal context files and installs detail API
+To download Pascal-Context, run the following command from the `nbdt-segmentation` directory:
 
-https://github.com/zhanghang1989/PyTorch-Encoding/blob/master/scripts/prepare_pcontext.py
+```bash
+python data/scripts/download_pascal_ctx.py
+```
 
-Install [details](https://github.com/zhanghang1989/detail-api) API for parsing Pascal-Context data
+The above script performs the following:
+- Install [Detail API](https://github.com/zhanghang1989/detail-api) for parsing Pascal-Context
+- Download Pascal VOC 2010 dataset
+- Download Pascal-Context files
+    - trainval_merged.json
+    - train.pth
+    - val.pth
 
 </div>
 </details>
