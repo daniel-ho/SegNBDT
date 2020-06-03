@@ -2,7 +2,8 @@
 
 Prepare PASCAL Context Dataset
 
-This script was takene from https://github.com/zhanghang1989/PyTorch-Encoding
+This script was taken from https://github.com/zhanghang1989/PyTorch-Encoding
+and modified for SegNBDT purposes.
 
 """
 import os
@@ -10,7 +11,7 @@ import shutil
 import argparse
 import tarfile
 
-from .download_utils import download, mkdir
+from download_utils import download, mkdir
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -35,9 +36,9 @@ def download_pascal_ctx(download_dir, overwrite=False):
         # extract
         if os.path.splitext(filename)[1] == '.tar':
             with tarfile.open(filename) as tar:
-                tar.extractall(path=path)
+                tar.extractall(path=download_dir)
         else:
-            shutil.move(filename, os.path.join(path, 'VOCdevkit/VOC2010/'+os.path.basename(filename)))
+            shutil.move(filename, os.path.join(download_dir, 'VOCdevkit/VOC2010/'+os.path.basename(filename)))
 
 def install_detail_api(download_dir):
     repo_url = "https://github.com/zhanghang1989/detail-api"
@@ -52,5 +53,8 @@ def install_detail_api(download_dir):
 if __name__ == '__main__':
     args = parse_args()
     os.makedirs(args.download_dir, exist_ok=True)
-    install_detail_api(args.download_dir)    
+    print("Installing Detail-API....")
+    install_detail_api(args.download_dir)
+    print("Downloading Pascal-Context Dataset....")
     download_pascal_ctx(args.download_dir, overwrite=False)
+    print("Download Complete.")
