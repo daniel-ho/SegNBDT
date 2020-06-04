@@ -178,8 +178,6 @@ TODO: change Seg function names in nbdt repo?
 
 Pretrained models for the baselines and NBDT models are provided [here](). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
 
-note: all training scripts assume 4 gpus
-
 For both training and evaluation, a configuration file must be specified. Configuration files for training baseline models can be found under `experiments/${DATASET}`, while the configuration files for training NBDT models can be found under `experiments/${DATASET}/nbdt`. In general, the provided configuration files assume 4 GPUs unless otherwise specified. 
 
 ## Training
@@ -201,14 +199,34 @@ python -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg exper
 
 ## Evaluation
 
+The evaluation command follows this format:
 ```
-python tools/test.py --cfg experiments/cityscapes/nbdt/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw100.yaml
+python tools/test.py --cfg experiments/${DATASET}/${CONFIG}.yaml
 ```
 
+Evaluating baseline Cityscapes model without multi-scale and flip testing:
 ```
-python tools/test.py --cfg experiments/pascal_ctx/nbdt/seg_hrnet_w48_cls59_480x480_sgd_lr4e-3_wd1e-4_bs_16_epoch200_tsw10.yaml \
+python tools/test.py --cfg experiments/cityscapes/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484.yaml
+```
+
+Evaluating NBDT Cityscapse model without multi-scale and flip testing:
+```
+python tools/test.py --cfg experiments/cityscapes/nbdt/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10.yaml
+```
+
+Evaluating baseline Pascal-Context with multi-scale and flip testing:
+```
+python tools/test.py --cfg experiments/pascal_ctx/seg_hrnet_w48_cls59_480x480_sgd_lr4e-3_wd1e-4_bs_16_epoch200.yaml \
                      TEST.SCALE_LIST 0.5,0.75,1.0,1.25,1.5,1.75,2.0 \
                      TEST.FLIP_TEST True
+```
+
+Evaluating baseline LookIntoPerson with flip testing:
+```
+python tools/test.py --cfg experiments/lip/seg_hrnet_w48_473x473_sgd_lr7e-3_wd5e-4_bs_40_epoch150.yaml \
+                     DATASET.TEST_SET list/lip/testvalList.txt \
+                     TEST.FLIP_TEST True \
+                     TEST.NUM_SAMPLES 0
 ```
 
 ## Visualization
