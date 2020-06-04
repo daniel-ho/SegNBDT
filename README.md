@@ -135,31 +135,29 @@ $SEG_ROOT/data
 
 # Convert Neural Networks to Decision Trees
 
-general process:
-- nbdt repo steps: (basically follow dataset section)
-    - add dataloader
-    - modify utils.py
-    - generate wnids (may need to add hardcodings)
-- download or train baseline model
-- use pretrained model to generate hierarchy
-- wrap original loss w/ soft loss and train
-- wrap model w/ soft decision rules for eval
-
-TODO: Fill out click to expand section on supporting new dataset (generate wnid + hierarchy)
-
-<details><summary><b>Want to train on a new dataset?</b> <i>[click to expand]</i></summary>
-<div>
-
-generate stuff
-
-</div>
-</details>
-
 TODO: change Seg function names in nbdt repo?
 
 **To convert your neural network** into a neural-backed decision tree for segmentation:
 
-1. **Train the original neural network with an NBDT loss**. Wrap the original cretion with the NBDT loss. In the example below, we assume the original loss is denoted by `criterion`.
+1. **Download or train baseline segmentation model**. No modifications are necessary for training the baseline model.
+
+2. **Generate induced hierarchy using pretrained model**. 
+
+  ```bash
+  nbdt-hierarchy --checkpoint=${CHECKPOINT}.pth --dataset=${DATASET}
+  ```
+  
+3. **Setup experiment configuration file**. Existing configuration files for baseline models can be modified for training NBDT models by adding the lines below. In the example below, we modify the HRNetv2-W18-v1 configuration file by specifying the dataset, induced hierarchy name, and tree supervision weight. 
+
+  ```
+  NBDT:
+    USE_NBDT: true
+    DATASET: 'Cityscapes'
+    HIERARCHY: 'induced-HRNet-w18-v1'
+    TSW: 10
+  ```
+
+4. **Train the original neural network with an NBDT loss**. Wrap the original criterion with the NBDT loss. In the example below, we assume the original loss is denoted by `criterion`.
 
   ```python
   from nbdt.loss import SoftSegTreeSupLoss
@@ -167,12 +165,23 @@ TODO: change Seg function names in nbdt repo?
       hierarchy=config.NBDT.HIERARCHY, tree_supervision_weight=config.NBDT.TSW)
   ```
 
-2. **Perform inference or validate using an NBDT model**. Wrap the original model trained in the previous step. In the example below, the original model is denoted by `model` and it is wrapped with the SoftSegNBDT wrapper.
+5. **Perform inference or validate using an NBDT model**. Wrap the original model trained in the previous step. In the example below, the original model is denoted by `model` and it is wrapped with the SoftSegNBDT wrapper.
 
   ```python
   from nbdt.model import SoftSegNBDT
   model = SoftSegNBDT(config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY)
   ```
+  
+<details><summary><b>Want to train on a new dataset?</b> <i>[click to expand]</i></summary>
+<div>
+
+In order to support a new dataset, changes must be made to the NBDT repository. Follow the same steps as in the NBDT repository, located [here](https://github.com/alvinwan/neural-backed-decision-trees-private#dataset). Note that the NBDT repository must be setup in development mode for the changes to be reflected. At a high-level, the following steps must be completed:
+- Add dataloader for new dataset in `nbdt/data`
+- Modify `nbdt/utils.py` to support the new dataset
+- Optionally generate wnids for the dataset (hardcodings may be needed in `nbdt/bin/nbdt-wnids`)
+
+</div>
+</details>
 
 # Training and Evaluation
 
