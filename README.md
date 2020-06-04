@@ -180,14 +180,21 @@ Pretrained models for the baselines and NBDT models are provided [here](). To tr
 
 note: all training scripts assume 4 gpus
 
+For both training and evaluation, a configuration file must be specified. Configuration files for training baseline models can be found under `experiments/${DATASET}`, while the configuration files for training NBDT models can be found under `experiments/${DATASET}/nbdt`. In general, the provided configuration files assume 4 GPUs unless otherwise specified. 
+
 ## Training
 
-Baseline:
+The command to train a baseline model on 4 GPUs will follow this format:
+```
+python -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg experiments/${DATASET}/${CONFIG}.yaml
+```
+
+For example, the following command trains a baseline HRNetv2-W48 model on Cityscapes:
 ```
 python -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg experiments/cityscapes/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484.yaml
 ```
 
-NBDT:
+The command to train an NBDT model is almost identical. For example:
 ```
 python -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg experiments/cityscapes/nbdt/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10.yaml
 ```
