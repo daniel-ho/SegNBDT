@@ -1,6 +1,10 @@
 # SegNBDT: Visual Decision Rules for Segmentation
 
+*By TODO: Authors*
+
 TODO: Intro
+
+Run decision trees that achieve competitive accuracy within ~2-4% of the state-of-the-art HRNetV2 segmentation model on three benchmark datasets -- Cityscapes, Pascal-Context, and LookIntoPerson. Run GradPAM to visualize coarse visual decision rules.
 
 **Table of Contents**
 
@@ -8,7 +12,6 @@ TODO: Intro
 - [Convert your own neural network into a decision tree](#convert-neural-networks-to-decision-trees)
 - [Training and Evaluation](#training-and-evaluation)
 - [Results](#results)
-- [Setup for Development](#setup-for-development)
 - [Citation](#citation)
 
 # Quickstart
@@ -129,13 +132,7 @@ $SEG_ROOT/data
 │       └── validation.odgt
 ````
 
-## Running Pretrained NBDTs on Examples
-
-## Loading Pretrained NBDTs
-
 # Convert Neural Networks to Decision Trees
-
-TODO: change Seg function names in nbdt repo?
 
 **To convert your neural network** into a neural-backed decision tree for segmentation:
 
@@ -175,7 +172,7 @@ TODO: change Seg function names in nbdt repo?
 <details><summary><b>Want to train on a new dataset?</b> <i>[click to expand]</i></summary>
 <div>
 
-In order to support a new dataset, changes must be made to the NBDT repository. Follow the same steps as in the NBDT repository, located [here](https://github.com/alvinwan/neural-backed-decision-trees-private#dataset). Note that the NBDT repository must be setup in development mode for the changes to be reflected. At a high-level, the following steps must be completed:
+In order to support a new dataset, changes must be made to the NBDT repository. Follow the same steps as in the NBDT repository, located [here](https://github.com/alvinwan/neural-backed-decision-trees#dataset). Note that the NBDT repository must be setup in development mode for the changes to be reflected. At a high-level, the following steps must be completed:
 - Add dataloader for new dataset in `nbdt/data`
 - Modify `nbdt/utils.py` to support the new dataset
 - Optionally generate wnids for the dataset (hardcodings may be needed in `nbdt/bin/nbdt-wnids`)
@@ -239,8 +236,6 @@ python tools/test.py --cfg experiments/lip/seg_hrnet_w48_473x473_sgd_lr7e-3_wd5e
 ```
 
 ## Visualization
-
-keep as subsection? or move to bigger section
 
 (inncluded picture of hierarchy, so users can pick a node of choicec for below command)
 
@@ -603,22 +598,18 @@ python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls oggra
 
 # Results
 
-All models use the HRNetv2-W48 architecture initialized by weights pretrained on ImageNet. Note that: LIP is evaluated with flip, Pascal-Context is evaluated with multi-scale (0.5,0.75,1.0,1.25,1.5,1.75) and flip. 
-
-note: remove ade20k? 
+All models use the HRNetV2-W48 architecture initialized by weights pretrained on ImageNet. Note that: LIP is evaluated with flip, Pascal-Context is evaluated with multi-scale (0.5,0.75,1.0,1.25,1.5,1.75) and flip. 
 
 |                      | Cityscapes | Pascal-Context | LIP    | ADE20K |
 |----------------------|------------|----------------|--------|--------|
-| NBDT-S (Ours)        | 79.01%     | 49.12%         | 51.64% | 35.83% |
 | NN Baseline          | 81.12%     | 52.54%         | 55.37% | 42.58% |
+| NBDT-S (Ours)        | 79.01%     | 49.12%         | 51.64% | 35.83% |
 | Performance Gap      | 2.11%      | 3.42%          | 3.73%  |  6.75% |
-
-# Setup for Development
 
 # Citation
 
 If you find this work useful for your research, please cite our [paper]():
 
 ```
-@add citation
+@TODO: add citation
 ```
