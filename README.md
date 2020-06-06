@@ -1,6 +1,6 @@
 # SegNBDT: Visual Decision Rules for Segmentation
 
-*By TODO: Authors*
+*By Alvin Wan, Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
 
 TODO: Intro
 
@@ -25,7 +25,7 @@ pip install nbdt
 ```
 2. Clone this repository and install all dependencies:
 ```bash
-git clone #TODO: public repo link
+git clone https://github.com/daniel-ho/seg-nbdt
 pip install -r requirements.txt
 ```
 
