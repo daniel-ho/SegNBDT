@@ -2,9 +2,11 @@
 
 *By Alvin Wan, Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
 
-TODO: Intro
-
 Run decision trees that achieve competitive accuracy within ~2-4% of the state-of-the-art HRNetV2 segmentation model on three benchmark datasets -- Cityscapes, Pascal-Context, and LookIntoPerson. Run GradPAM to visualize coarse visual decision rules.
+
+Note that this repository is based on the [HRNetV2](https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/pytorch-v1.1) repository and modified for our purposes.
+
+TODO: Add figure
 
 **Table of Contents**
 
