@@ -32,6 +32,7 @@ pip install nbdt
 git clone https://github.com/daniel-ho/seg-nbdt
 pip install -r requirements.txt
 ```
+Note: This repository has only been tested with Python 3.6.
 
 ## Dataset Preparation
 
