@@ -6,7 +6,7 @@ Run decision trees that achieve competitive accuracy within ~2-4% of the state-o
 
 Note that this repository is based on the [HRNetV2](https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/pytorch-v1.1) repository and modified for our purposes.
 
-TODO: Add figure
+![grad_pam_pipeline](https://user-images.githubusercontent.com/14956645/83956574-6bd2a280-a814-11ea-8f8d-599cf19aa7dd.jpg)
 
 **Table of Contents**
 
