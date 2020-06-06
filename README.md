@@ -84,7 +84,7 @@ Download the ADE20K dataset [here](https://groups.csail.mit.edu/vision/datasets/
 </details>
 
 The dataset directory will look as follows:
-````bash
+````
 $SEG_ROOT/data
 ├── cityscapes
 │   ├── gtFine
