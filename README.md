@@ -242,6 +242,8 @@ python tools/test.py --cfg experiments/lip/seg_hrnet_w48_473x473_sgd_lr7e-3_wd5e
 
 ## Visualization
 
+Configuration files for visualizations are located under `experiments/cityscapes/vis/*`. Note that the visualization configurations are identical to their training configuration counterpart aside from number of GPUs used. For example, `experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024_tsw10.yaml` is the same as `experiments/cityscapes/nbdt/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10.yaml`. Thus to generate visualizations for other datasets, the configurations can simply be copy and pasted.
+
 (inncluded picture of hierarchy, so users can pick a node of choicec for below command)
 
 instructions on how to generate image-wide gradpam. got a node, class, and image in mind? 
