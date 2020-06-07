@@ -1,10 +1,14 @@
 # SegNBDT: Visual Decision Rules for Segmentation
 
+[Paper]()
+
 *By Alvin Wan, Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
 
-TODO: Intro
-
 Run decision trees that achieve competitive accuracy within ~2-4% of the state-of-the-art HRNetV2 segmentation model on three benchmark datasets -- Cityscapes, Pascal-Context, and LookIntoPerson. Run GradPAM to visualize coarse visual decision rules.
+
+Note that this repository is based on the [HRNetV2](https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/pytorch-v1.1) repository and modified for our purposes.
+
+![grad_pam_pipeline](https://user-images.githubusercontent.com/14956645/83956574-6bd2a280-a814-11ea-8f8d-599cf19aa7dd.jpg)
 
 **Table of Contents**
 
@@ -28,6 +32,7 @@ pip install nbdt
 git clone https://github.com/daniel-ho/seg-nbdt
 pip install -r requirements.txt
 ```
+Note: This repository has only been tested with Python 3.6.
 
 ## Dataset Preparation
 
@@ -84,7 +89,7 @@ Download the ADE20K dataset [here](https://groups.csail.mit.edu/vision/datasets/
 </details>
 
 The dataset directory will look as follows:
-````bash
+````
 $SEG_ROOT/data
 ├── cityscapes
 │   ├── gtFine
@@ -182,7 +187,7 @@ In order to support a new dataset, changes must be made to the NBDT repository. 
 
 # Training and Evaluation
 
-Pretrained models for the baselines and NBDT models are provided [here](). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
+Pretrained models for the baselines and NBDT models are provided [here](https://github.com/daniel-ho/seg-nbdt/releases/tag/0.0.1). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
 
 For both training and evaluation, a configuration file must be specified. Configuration files for training baseline models can be found under `experiments/${DATASET}`, while the configuration files for training NBDT models can be found under `experiments/${DATASET}/nbdt`. In general, the provided configuration files assume 4 GPUs unless otherwise specified. 
 
@@ -236,6 +241,8 @@ python tools/test.py --cfg experiments/lip/seg_hrnet_w48_473x473_sgd_lr7e-3_wd5e
 ```
 
 ## Visualization
+
+Configuration files for visualizations are located under `experiments/cityscapes/vis/*`. Note that the visualization configurations are identical to their training configuration counterpart aside from number of GPUs used. For example, `experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024_tsw10.yaml` is the same as `experiments/cityscapes/nbdt/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10.yaml`. Thus to generate visualizations for other datasets, the configurations can simply be copy and pasted.
 
 (inncluded picture of hierarchy, so users can pick a node of choicec for below command)
 
