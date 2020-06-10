@@ -596,7 +596,7 @@ nbdt-hierarchy \
 	<summary>3. Generate all figures</summary>
 
 ```
-for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_light; do python /data/alvinwan/nbdt-segmentation/tools/vis_copy.py template-${cls}.html --dirs-for-cls ${cls} --suffix=-${cls}; done
+for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_light; do python tools/vis_copy.py template-${cls}.html --dirs-for-cls ${cls} --suffix=-${cls}; done
 ```
 </details>
 
@@ -604,7 +604,7 @@ for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_l
 	<summary>Optionally generate survey</summary>
 
 ```
-python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls SegGradCAM*crop400/*` --baseline-original `ls SegGradCAM*original/*` --ours image*.html
+python tools/vis_survey.py --baseline `ls SegGradCAM*crop400/*` --baseline-original `ls SegGradCAM*original/*` --ours image*.html
 ```
 
 </details>
@@ -617,6 +617,7 @@ wget http://groups.csail.mit.edu/vision/datasets/ADE20K/ADE20K_2016_07_26.zip
 unzip ADE20K_2016_07_26.zip 
 ```
 Place the dataset in the `data` directory under `ade20k_full`, i.e. the full path will be `SegNBDT/data/ade20k_full`.
+
 To run the script, specify the path to the pretrained model using the `TEST.MODEL_FILE` parameter and run
 ```
 python ade20k_car_part_analysis.py —cfg ${CONFIG} —index ${INDEX} —path-graph ${PATH_GRAPH} —wnid ${WNID}
