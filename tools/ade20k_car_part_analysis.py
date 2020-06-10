@@ -20,9 +20,9 @@ from nbdt.utils import (coerce_tensor, uncoerce_tensor)
 from ade20k_parts_helper import Dataset
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Ade20k Node Hypotheses')
+    parser = argparse.ArgumentParser(description='ADE20K Node Hypotheses')
     parser.add_argument('--cfg',
-                        help='experiment configure file name',
+                        help='ADE20K experiment configuration file',
                         required=True,
                         type=str)
     parser.add_argument('--index',
@@ -30,7 +30,7 @@ def parse_args():
                         required=True,
                         type=int)
     parser.add_argument('--path-graph',
-                        help='path graph of nbdt hierarchy',
+                        help='path graph of NBDT hierarchy',
                         required=True,
                         type=str)
     parser.add_argument('--wnid',
@@ -95,13 +95,13 @@ def main():
     obj_masks, masks = ade.get_masks(index)
     
     car_mask = obj_masks[401]
-    print("car proportion: " + str(np.mean(1-car_mask)))
+    print("Car Proportion: " + str(np.mean(1-car_mask)))
 
     for obj in masks:
         print(ade.object_name(obj))
         mask = masks[obj]
 
-        print("proportion: " + str(np.mean(1-mask)))
+        print("Proportion: " + str(np.mean(1-mask)))
 
         combined_mask = np.uint8(np.equal(car_mask, mask))    
         masked_img = ade.mask_image(image, mask)

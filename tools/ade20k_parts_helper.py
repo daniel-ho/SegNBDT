@@ -1,4 +1,8 @@
-# base dataloader credit to http://netdissect.csail.mit.edu/data/code/src/ade20k.py
+"""
+
+Based on dataloader found at http://netdissect.csail.mit.edu/data/code/src/ade20k.py
+
+"""
 
 import os, glob
 import re
@@ -12,12 +16,14 @@ from scipy.ndimage.interpolation import zoom
 import cv2
 from PIL import Image
 
-ADE_ROOT = '../data/ade20k'
+ADE_ROOT = '../data/ade20k_full'
 ADE_VER = 'ADE20K_2016_07_26'
 
 def decodeClassMask(im):
-    '''Decodes pixel-level object/part class and instance data from
-    the given image, previously encoded into RGB channels.'''
+    """
+    Decodes pixel-level object/part class and instance data from
+    the given image, previously encoded into RGB channels.
+    """
     # Classes are a combination of RG channels (dividing R by 10)
     return (im[:,:,0] // 10) * 256 + im[:,:,1]
 
@@ -66,7 +72,7 @@ class Dataset:
         self.obj_id = obj_id
 
     def expand(self, *path):
-        '''Expands a filename and directories with the ADE dataset'''
+        """Expands a filename and directories with the ADE dataset"""
         result = os.path.join(self.root, *path)
         if '*' in result or '?' in result:
             globbed = glob.glob(result)
@@ -75,28 +81,28 @@ class Dataset:
         return result
 
     def filename(self, n):
-        '''Returns the filename for the nth dataset image.'''
+        """Returns the filename for the nth dataset image."""
         filename = self.index.filename[n]
         folder = self.index.folder[n]
         return self.expand(folder, filename)
 
     def short_filename(self, n):
-        '''Returns the filename for the nth dataset image, without folder.'''
+        """Returns the filename for the nth dataset image, without folder."""
         return self.index.filename[n]
 
     def size(self):
-        '''Returns the number of images in this dataset.'''
+        """Returns the number of images in this dataset."""
         return len(self.index.filename)
 
     def num_object_types(self):
         return len(self.index.objectnames)
 
     def seg_filename(self, n):
-        '''Returns the segmentation filename for the nth dataset image.'''
+        """Returns the segmentation filename for the nth dataset image."""
         return re.sub(r'\.jpg$', '_seg.png', self.filename(n))
 
     def part_filenames(self, n):
-        '''Returns all the subpart images for the nth dataset image.'''
+        """Returns all the subpart images for the nth dataset image."""
         filename = self.filename(n)
         level = 1
         result = []
@@ -111,7 +117,7 @@ class Dataset:
     def part_levels(self):
         return max([len(self.part_filenames(n)) for n in range(self.size())])
 
-    # returns the object IDs of the segmentation masks PAST level 1 (submasks only)
+    # Returns the object IDs of the segmentation masks PAST level 1 (submasks only)
     def part_objects(self, n):
         full_seg = self.full_segmentation(n)
         num_levels = len(full_seg)
@@ -126,11 +132,11 @@ class Dataset:
         return part_ids 
 
     def image(self, n):
-        '''Returns the nth dataset image as a numpy array.'''
+        """Returns the nth dataset image as a numpy array."""
         image = imread(self.filename(n))
         return image
 
-    # returns a dictionary of masks (key = object part; value = mask)
+    # Returns a dictionary of masks (key = object part; value = mask)
     def get_masks(self, n):
         obj_masks = {}
         part_masks = {}
@@ -162,12 +168,13 @@ class Dataset:
         return masked_img
 
     def segmentation(self, n, include_instances=False):
-        '''Returns the nth dataset segmentation as a numpy array,
+        """
+        Returns the nth dataset segmentation as a numpy array,
         where each entry at a pixel is an object class value.
 
         If include_instances is set, returns a pair where the second
-        array labels each instance with a unique number.'''
-        
+        array labels each instance with a unique number.
+        """
         data = imread(self.seg_filename(n))
         if include_instances:
             return (decodeClassMask(data), decodeInstanceMask(data))
@@ -175,10 +182,12 @@ class Dataset:
             return decodeClassMask(data)
 
     def parts(self, n, include_instances=False):
-        '''Returns an list of part segmentations for the nth dataset item,
+        """
+        Returns an list of part segmentations for the nth dataset item,
         with one array for each level available.  If included_instances is
         set, the list contains pairs of numpy arrays (c, i) where i
-        represents instances.'''
+        represents instances.
+        """
         result = []
         for fn in self.part_filenames(n):
             data = imread(fn)
@@ -201,7 +210,7 @@ class Dataset:
         return numpy.concatenate(tuple(m[numpy.newaxis] for m in full))
 
     def object_name(self, c):
-        '''Returns a short English name for the object class c.'''
+        """Returns a short English name for the object class c."""
         # Off by one due to use of 1-based indexing in matlab.
         if c == 0:
             return '-'
@@ -209,12 +218,12 @@ class Dataset:
         return re.split(',\s*', result, 1)[0]
 
     def object_count(self, c):
-        '''Returns a count of the object over the whole dataset.'''
+        """Returns a count of the object over the whole dataset."""
         # Off by one due to use of 1-based indexing in matlab.
         return self.index.objectcounts[c - 1]
 
     def object_presence(self, c):
-        '''Returns a per-dataset-item count of the object.'''
+        """Returns a per-dataset-item count of the object."""
         # Off by one due to use of 1-based indexing in matlab.
         return self.index.objectPresence[c - 1]
 
@@ -298,8 +307,10 @@ class Dataset:
                 f.write('%s\t%d\n' % (self.object_name(index), index - offset))
 
 def safezoom(array, ratio, output=None, order=0):
-    '''Like numpy.zoom, but does not crash when the first dimension
-    of the array is of size 1, as happens often with segmentations'''
+    """
+    Like numpy.zoom, but does not crash when the first dimension
+    of the array is of size 1, as happens often with segmentations
+    """
     dtype = array.dtype
     if array.dtype == numpy.float16:
         array = array.astype(numpy.float32)
