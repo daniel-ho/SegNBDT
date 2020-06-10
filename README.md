@@ -32,7 +32,7 @@ pip install nbdt
 ```
 2. Clone this repository and install all dependencies:
 ```bash
-git clone https://github.com/daniel-ho/seg-nbdt
+git clone https://github.com/daniel-ho/SegNBDT
 pip install -r requirements.txt
 ```
 Note: This repository has only been tested with Python 3.6.
