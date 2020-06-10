@@ -1,3 +1,5 @@
+# credit to http://netdissect.csail.mit.edu/data/code/src/ade20k.py
+
 import os, glob
 import re
 import numpy
