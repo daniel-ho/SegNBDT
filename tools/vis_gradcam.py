@@ -48,8 +48,7 @@ def parse_args():
                         required=True,
                         type=str)
     parser.add_argument('--vis-mode', type=str, default='GradCAM',
-                        choices=['GradCAM','NormGrad','GradCAMWhole',
-                            'NormGradWhole', 'OGGradCAM'],
+                        choices=METHODS.keys(),
                         help='Type of gradient visualization')
     parser.add_argument('--image-index', type=int, default=0,
                         help='Index of input image for GradCAM')
