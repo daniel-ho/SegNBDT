@@ -194,7 +194,7 @@ In order to support a new dataset, changes must be made to the NBDT repository. 
 
 # Training and Evaluation
 
-Pretrained models for the baselines and NBDT models are provided [here](https://github.com/daniel-ho/SegNBDT/releases/tag/0.0.1). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
+Pretrained models for the baselines and NBDT models are provided [here](https://github.com/daniel-ho/SegNBDT/releases/tag/0.0.1). To use these checkpoints, specify the checkpoint path using the configuration `TEST.MODEL_FILE`. To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
 
 For both training and evaluation, a configuration file must be specified. Configuration files for training baseline models can be found under `experiments/${DATASET}`, while the configuration files for training NBDT models can be found under `experiments/${DATASET}/nbdt`. In general, the provided configuration files assume 4 GPUs unless otherwise specified.
 
@@ -217,9 +217,9 @@ python -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg exper
 
 ## Evaluation
 
-The evaluation command follows this format:
+The evaluation command follows this format: (`TEST.MODEL_FILE` is optional)
 ```
-python tools/test.py --cfg experiments/${DATASET}/${CONFIG}.yaml
+python tools/test.py --cfg experiments/${DATASET}/${CONFIG}.yaml TEST.MODEL_FILE ${CHECKPOINT_PATH}
 ```
 
 Evaluating baseline Cityscapes model without multi-scale and flip testing:
