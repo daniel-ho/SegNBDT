@@ -1,18 +1,15 @@
-#!/usr/bin/env python
-# coding: utf-8
-#
-# Author:   Kazuto Nakashima
-# URL:      http://kazuto1011.github.io
-# Created:  2017-05-26
+"""
 
-from collections import Sequence
+Based on the implementation at https://github.com/kazuto1011/grad-cam-pytorch
+Modified to support GradPAM and NBDT
+
+"""
 
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
 from tqdm import tqdm
-
 
 class _BaseWrapper(object):
 
@@ -166,7 +163,7 @@ class _SegBaseWrapper(_BaseWrapper):
         self.logits.backward(gradient=one_hot, retain_graph=True)
 
 
-class SegGradCAM(_SegBaseWrapper, GradCAM):
+class GradPAM(_SegBaseWrapper, GradCAM):
 
     def generate(self, target_layer, normalize=True):
         fmaps = self._find(self.fmap_pool, target_layer)
@@ -217,7 +214,7 @@ class _SegWholeWrapper(_SegBaseWrapper):
         return super(_SegBaseWrapper, self).backward(labels)
 
 
-class SegGradCAMWhole(_SegWholeWrapper, SegGradCAM):
+class GradPAMWhole(_SegWholeWrapper, GradPAM):
 
     whole_image = True
 
@@ -227,5 +224,5 @@ class SegNormGradWhole(_SegWholeWrapper, SegNormGrad):
     whole_image = True
 
 
-class SegOGGradCAM(_SegBaseWrapper, GradCAM):
+class SegGradCAM(_SegBaseWrapper, GradCAM):
     pass
