@@ -2,7 +2,9 @@
 
 [Paper]()
 
-*By Alvin Wan, Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
+*By \*Alvin Wan, \*Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
+
+<sub>*denotes equal contribution</sub>
 
 Run decision trees that achieve competitive accuracy within ~2-4% of the state-of-the-art HRNetV2 segmentation model on three benchmark datasets -- Cityscapes, Pascal-Context, and LookIntoPerson. Run GradPAM to visualize coarse visual decision rules.
 
@@ -220,7 +222,7 @@ Evaluating baseline Cityscapes model without multi-scale and flip testing:
 python tools/test.py --cfg experiments/cityscapes/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484.yaml
 ```
 
-Evaluating NBDT Cityscapse model without multi-scale and flip testing:
+Evaluating NBDT Cityscapes model without multi-scale and flip testing:
 ```
 python tools/test.py --cfg experiments/cityscapes/nbdt/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10.yaml
 ```
