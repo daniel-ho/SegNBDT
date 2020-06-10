@@ -624,6 +624,17 @@ python ade20k_car_part_analysis.py —cfg CONFIG_FILE —index INDEX —path-gra
 - `wnid`: wnid of node to run analysis on 
 - `index`: index of the input ADE20K image (0-indexed)
 
+<details>
+#### Example
+
+![car_part_analysis](https://user-images.githubusercontent.com/11863465/84226818-a730d380-aa97-11ea-944d-0a3ad8663a1b.png)
+
+```
+python ade20k_car_part_analysis.py --cfg seg_hrnet_w48_520x520_sgd_lr2e-2_wd1e-4_bs_16_epoch120_tsw10.yaml --index 2038 --path-graph "graph-induced-HRNet-w48.json" --wnid "f00000255"
+```
+
+</details>
+
 # Results
 
 All models use the HRNetV2-W48 architecture initialized by weights pretrained on ImageNet. Note that: LIP is evaluated with flip, Pascal-Context is evaluated with multi-scale (0.5,0.75,1.0,1.25,1.5,1.75) and flip.
