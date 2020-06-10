@@ -217,10 +217,11 @@ python -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg exper
 
 ## Evaluation
 
-The evaluation command follows this format: (`TEST.MODEL_FILE` is optional)
+The evaluation command follows this format:
 ```
 python tools/test.py --cfg experiments/${DATASET}/${CONFIG}.yaml TEST.MODEL_FILE ${CHECKPOINT_PATH}
 ```
+If `TEST.MODEL_FILE` is not specified, by default, evaluation will load the checkpoint located at `output/${DATASET}/${CONFIG}/best.pth`. Otherwise, `TEST.MODEL_FILE` can be used to load pretrained checkpoints.
 
 Evaluating baseline Cityscapes model without multi-scale and flip testing:
 ```
