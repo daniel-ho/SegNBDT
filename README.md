@@ -82,10 +82,14 @@ The following zip files are required:
 </div>
 </details>
 
-<details><summary><b>ADE20K Setup</b> <i>[click to expand]</i></summary>
+<details><summary><b>ADE20K Scene Parsing Setup</b> <i>[click to expand]</i></summary>
 <div>
 
-Download the ADE20K dataset [here](https://groups.csail.mit.edu/vision/datasets/ADE20K/).
+Download the ADE20K Scene Parsing dataset [here](http://sceneparsing.csail.mit.edu/).
+Alternatively, run the following:
+```bash
+wget http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip
+```
 
 </div>
 </details>
