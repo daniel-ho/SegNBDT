@@ -31,6 +31,15 @@ from utils.modelsummary import get_model_summary
 from utils.utils import create_logger
 from collections import defaultdict
 
+METHODS = {
+    'GradPAM': GradPAM,
+    'GradPAMWhole': GradPAMWhole,
+    'SegNormGrad': SegNormGrad,
+    'SegNormGradWhole': SegNormGradWhole,
+    'GradCAM': GradCAM,
+    'SegGradCAM': SegGradCAM
+}
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Visualize GradCAM')
 
@@ -39,8 +48,7 @@ def parse_args():
                         required=True,
                         type=str)
     parser.add_argument('--vis-mode', type=str, default='GradCAM',
-                        choices=['GradCAM','NormGrad','GradCAMWhole',
-                            'NormGradWhole', 'OGGradCAM'],
+                        choices=METHODS.keys(),
                         help='Type of gradient visualization')
     parser.add_argument('--image-index', type=int, default=0,
                         help='Index of input image for GradCAM')
@@ -441,7 +449,7 @@ def main():
             logger.info(f'=> Final bounds are: ({minimum}, {maximum})')
 
     # Instantiate wrapper once, outside of loop
-    Saliency = eval('Seg'+args.vis_mode)   # change to dict?
+    Saliency = METHODS[args.vis_mode]
     gradcam = Saliency(model=model, candidate_layers=target_layers,
         use_nbdt=config.NBDT.USE_NBDT, nbdt_node_wnid=None)
 
