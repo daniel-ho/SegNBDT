@@ -145,13 +145,13 @@ $SEG_ROOT/data
 
 1. **Download or train baseline segmentation model**. No modifications are necessary for training the baseline model.
 
-2. **Generate induced hierarchy using pretrained model**. 
+2. **Generate induced hierarchy using pretrained model**.
 
   ```bash
   nbdt-hierarchy --checkpoint=${CHECKPOINT}.pth --dataset=${DATASET}
   ```
-  
-3. **Setup experiment configuration file**. Existing configuration files for baseline models can be modified for training NBDT models by adding the lines below. In the example below, we modify the HRNetv2-W18-v1 configuration file by specifying the dataset, induced hierarchy name, and tree supervision weight. 
+
+3. **Setup experiment configuration file**. Existing configuration files for baseline models can be modified for training NBDT models by adding the lines below. In the example below, we modify the HRNetv2-W18-v1 configuration file by specifying the dataset, induced hierarchy name, and tree supervision weight.
 
   ```
   NBDT:
@@ -175,7 +175,7 @@ $SEG_ROOT/data
   from nbdt.model import SoftSegNBDT
   model = SoftSegNBDT(config.NBDT.DATASET, model, hierarchy=config.NBDT.HIERARCHY)
   ```
-  
+
 <details><summary><b>Want to train on a new dataset?</b> <i>[click to expand]</i></summary>
 <div>
 
@@ -191,7 +191,7 @@ In order to support a new dataset, changes must be made to the NBDT repository. 
 
 Pretrained models for the baselines and NBDT models are provided [here](https://github.com/daniel-ho/seg-nbdt/releases/tag/0.0.1). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
 
-For both training and evaluation, a configuration file must be specified. Configuration files for training baseline models can be found under `experiments/${DATASET}`, while the configuration files for training NBDT models can be found under `experiments/${DATASET}/nbdt`. In general, the provided configuration files assume 4 GPUs unless otherwise specified. 
+For both training and evaluation, a configuration file must be specified. Configuration files for training baseline models can be found under `experiments/${DATASET}`, while the configuration files for training NBDT models can be found under `experiments/${DATASET}/nbdt`. In general, the provided configuration files assume 4 GPUs unless otherwise specified.
 
 ## Training
 
@@ -248,12 +248,12 @@ Configuration files for visualizations are located under `experiments/cityscapes
 
 (inncluded picture of hierarchy, so users can pick a node of choicec for below command)
 
-instructions on how to generate image-wide gradpam. got a node, class, and image in mind? 
+instructions on how to generate image-wide gradpam. got a node, class, and image in mind?
 
 ```
 python tools/vis_gradcam.py \
 	--cfg experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024_tsw10.yaml \
-	--vis-mode GradCAMWhole \
+	--vis-mode GradPAMWhole \
 	--image-index-range 0 5 1 \
 	--nbdt-node-wnid n00002684 \
 	--skip-save-npy \
@@ -273,7 +273,7 @@ NBDT
 for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_light; do
 	python tools/vis_gradcam.py \
 			--cfg experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024_tsw10.yaml \
-			--vis-mode GradCAMWhole \
+			--vis-mode GradPAMWhole \
 			--crop-size 400 \
 			--pixel-max-num-random 1 \
 			--image-index-range 0 200 1 \
@@ -290,7 +290,7 @@ baseline
 for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_light; do
 		python tools/vis_gradcam.py \
 				--cfg experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024.yaml \
-				--vis-mode OGGradCAM \
+				--vis-mode SegGradCAM \
 				--crop-size 400 \
 				--pixel-max-num-random 1 \
 				--image-index-range 0 250 1 \
@@ -600,14 +600,14 @@ for cls in car building vegetation bus sidewalk rider wall bicycle sky traffic_l
 	<summary>Optionally generate survey</summary>
 
 ```
-python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls oggradcam*crop400/*` --baseline-original `ls oggradcam*original/*` --ours image*.html
+python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls SegGradCAM*crop400/*` --baseline-original `ls SegGradCAM*original/*` --ours image*.html
 ```
 
 </details>
 
 # Results
 
-All models use the HRNetV2-W48 architecture initialized by weights pretrained on ImageNet. Note that: LIP is evaluated with flip, Pascal-Context is evaluated with multi-scale (0.5,0.75,1.0,1.25,1.5,1.75) and flip. 
+All models use the HRNetV2-W48 architecture initialized by weights pretrained on ImageNet. Note that: LIP is evaluated with flip, Pascal-Context is evaluated with multi-scale (0.5,0.75,1.0,1.25,1.5,1.75) and flip.
 
 |                      | Cityscapes | Pascal-Context | LIP    | ADE20K |
 |----------------------|------------|----------------|--------|--------|
