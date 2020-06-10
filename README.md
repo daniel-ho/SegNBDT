@@ -1,6 +1,6 @@
 # SegNBDT: Visual Decision Rules for Segmentation
 
-[Paper]()
+[Paper]() (Coming Soon)
 
 *By \*Alvin Wan, \*Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
 
@@ -654,5 +654,5 @@ All models use the HRNetV2-W48 architecture initialized by weights pretrained on
 If you find this work useful for your research, please cite our [paper]():
 
 ```
-@TODO: add citation
+Citation coming soon
 ```
