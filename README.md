@@ -53,7 +53,7 @@ Note: This repository has only been tested with Python 3.6.
 <details><summary><b>Pascal-Context Setup</b> <i>[click to expand]</i></summary>
 <div>
 
-To download Pascal-Context, run the following command from the `nbdt-segmentation` directory:
+To download Pascal-Context, run the following command from the `SegNBDT` directory:
 
 ```bash
 python data/scripts/download_pascal_ctx.py
@@ -97,7 +97,7 @@ wget http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip
 
 The dataset directory will look as follows:
 ````
-$SEG_ROOT/data
+SegNBDT/data
 ├── cityscapes
 │   ├── gtFine
 │   │   ├── test
@@ -194,7 +194,7 @@ In order to support a new dataset, changes must be made to the NBDT repository. 
 
 # Training and Evaluation
 
-Pretrained models for the baselines and NBDT models are provided [here](https://github.com/daniel-ho/seg-nbdt/releases/tag/0.0.1). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
+Pretrained models for the baselines and NBDT models are provided [here](https://github.com/daniel-ho/SegNBDT/releases/tag/0.0.1). To train from scratch, download the models pretrained on ImageNet [here](https://github.com/HRNet/HRNet-Image-Classification). The ImageNet pretrained models must be placed in a `pretrained_models` directory in the repository.
 
 For both training and evaluation, a configuration file must be specified. Configuration files for training baseline models can be found under `experiments/${DATASET}`, while the configuration files for training NBDT models can be found under `experiments/${DATASET}/nbdt`. In general, the provided configuration files assume 4 GPUs unless otherwise specified.
 
