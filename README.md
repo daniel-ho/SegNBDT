@@ -1,12 +1,12 @@
 # SegNBDT: Visual Decision Rules for Segmentation
 
-[Paper]() (Coming Soon)
+[Project Page]() &nbsp;//&nbsp; [Paper]() (Coming Soon)
 
 *By \*Alvin Wan, \*Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
 
 <sub>*denotes equal contribution</sub>
 
-Run decision trees that achieve competitive accuracy within ~2-4% of the state-of-the-art HRNetV2 segmentation model on three benchmark datasets -- Cityscapes, Pascal-Context, and LookIntoPerson. Run GradPAM to visualize coarse visual decision rules.
+Run decision trees that achieve competitive accuracy within ~2-4% of the state-of-the-art HRNetV2 segmentation model on three benchmark datasets -- Cityscapes, Pascal-Context, and LookIntoPerson. Run Gradient-weighted Pixel Activation Mapping (GradPAM) and Semantic Input Removal (SIR) for coarse and fine-grained visual decision rules respectively.
 
 Note that this repository is based on the [HRNetV2](https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/pytorch-v1.1) repository and modified for our purposes.
 
@@ -17,6 +17,7 @@ Note that this repository is based on the [HRNetV2](https://github.com/HRNet/HRN
 - [Quickstart: Installation, Running, and Loading](#quickstart)
 - [Convert your own neural network into a decision tree](#convert-neural-networks-to-decision-trees)
 - [Training and Evaluation](#training-and-evaluation)
+- [Visualization](#visualization)
 - [Results](#results)
 - [Citation](#citation)
 
@@ -246,7 +247,9 @@ python tools/test.py --cfg experiments/lip/seg_hrnet_w48_473x473_sgd_lr7e-3_wd5e
                      TEST.NUM_SAMPLES 0
 ```
 
-## Visualization
+# Visualization
+
+## Coarse Visual Decision Rules: GradPAM
 
 Configuration files for visualizations are located under `experiments/cityscapes/vis/*`. Note that the visualization configurations are identical to their training configuration counterpart aside from number of GPUs used. For example, `experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024_tsw10.yaml` is the same as `experiments/cityscapes/nbdt/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10.yaml`. Thus to generate visualizations for other datasets, the configurations can simply be copy and pasted.
 
@@ -609,9 +612,9 @@ python tools/vis_survey.py --baseline `ls SegGradCAM*crop400/*` --baseline-origi
 
 </details>
 
-## ADE20K Car Part Analysis
+## Fine-Grained Visual Decision Rules: Semantic Input Removal (SIR)
 
-Note that this analysis requires the full ADE20K dataset, while the ADE20K training setup above only uses the scene parsing subset of ADE20K. The full dataset can be downloaded [here](https://groups.csail.mit.edu/vision/datasets/ADE20K/); alternatively, run the following:
+We run SIR on ADE20K to analyze the impact of various car parts on accuracy. Note that this analysis requires the full ADE20K dataset, while the ADE20K training setup above only uses the scene parsing subset of ADE20K. The full dataset can be downloaded [here](https://groups.csail.mit.edu/vision/datasets/ADE20K/); alternatively, run the following:
 ```
 wget http://groups.csail.mit.edu/vision/datasets/ADE20K/ADE20K_2016_07_26.zip 
 unzip ADE20K_2016_07_26.zip 
