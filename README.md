@@ -611,33 +611,26 @@ python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls SegGr
 
 ## ADE20K Car Part Analysis
 
-The script relies on the ADE20K\_2016\_07\_26 version of the ADE20K dataset, which is available for download with the script: 
+Note that this analysis requires the full ADE20K dataset, while the ADE20K training setup above only uses the scene parsing subset of ADE20K. The full dataset can be downloaded [here](https://groups.csail.mit.edu/vision/datasets/ADE20K/); alternatively, run the following:
 ```
 wget http://groups.csail.mit.edu/vision/datasets/ADE20K/ADE20K_2016_07_26.zip 
 unzip ADE20K_2016_07_26.zip 
 ```
-Place the directory under `nbdt-segmentation/data/ade20k`.
-To run the script, put the path to the pretrained model as the `TEST.MODEL_FILE` parameter in the config file and run
-
+Place the dataset in the `data` directory under `ade20k_full`, i.e. the full path will be `SegNBDT/data/ade20k_full`.
+To run the script, specify the path to the pretrained model using the `TEST.MODEL_FILE` parameter and run
 ```
-python ade20k_car_part_analysis.py —cfg CONFIG_FILE —index INDEX —path-graph PATH_TO_NBDT_HIERARCHY_PATH_GRAPH —wnid WNID_OF_NODE
+python ade20k_car_part_analysis.py —cfg ${CONFIG} —index ${INDEX} —path-graph ${PATH_GRAPH} —wnid ${WNID}
 ```
-
-- `cfg`: config file for nbdt-segmentation (found under `experiments/ade20k/nbdt`
-- `path_graph`: path to the nbdt hierarchy path graph
+- `cfg`: ADE20K scene parsing configuration file (e.g. `experiments/ade20k/nbdt/*.yml`)
+- `path_graph`: path to the NBDT hierarchy path graph
 - `wnid`: wnid of node to run analysis on 
 - `index`: index of the input ADE20K image (0-indexed)
 
-<details>
-<summary>Example</summary>
-
+Consider the following example:
+```
+python tools/ade20k_car_part_analysis.py --cfg experiments/ade20k/nbdt/seg_hrnet_w48_520x520_sgd_lr2e-2_wd1e-4_bs_16_epoch120_tsw10.yaml --index 2038 --path-graph graph-induced-HRNet-w48.json --wnid f00000255
+```
 ![car_part_analysis](https://user-images.githubusercontent.com/11863465/84226818-a730d380-aa97-11ea-944d-0a3ad8663a1b.png)
-
-```
-python ade20k_car_part_analysis.py --cfg seg_hrnet_w48_520x520_sgd_lr2e-2_wd1e-4_bs_16_epoch120_tsw10.yaml --index 2038 --path-graph "graph-induced-HRNet-w48.json" --wnid "f00000255"
-```
-
-</details>
 
 # Results
 
