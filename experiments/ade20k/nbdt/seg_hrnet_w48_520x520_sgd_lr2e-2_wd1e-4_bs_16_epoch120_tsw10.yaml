@@ -9,10 +9,10 @@ WORKERS: 4
 PRINT_FREQ: 100
 
 DATASET:
-  DATASET: ade20k_scene_parsing
+  DATASET: ade20k
   ROOT: 'data/'
-  TEST_SET: 'list/ade20k_scene_parsing/validation.odgt'
-  TRAIN_SET: 'list/ade20k_scene_parsing/training.odgt'
+  TEST_SET: 'list/ade20k/validation.odgt'
+  TRAIN_SET: 'list/ade20k/training.odgt'
   NUM_CLASSES: 150
 MODEL:
   NAME: seg_hrnet
@@ -99,3 +99,8 @@ TEST:
   BATCH_SIZE_PER_GPU: 1
   FLIP_TEST: false
   MULTI_SCALE: false
+NBDT:
+  USE_NBDT: true
+  DATASET: 'ADE20K'
+  HIERARCHY: 'induced-HRNet-w48'
+  TSW: 10
