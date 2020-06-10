@@ -606,23 +606,23 @@ python /data/alvinwan/nbdt-segmentation/tools/vis_survey.py --baseline `ls SegGr
 </details>
 
 ## ADE20K Car Part Analysis
+
 The script relies on the ADE20K\_2016\_07\_26 of the ADE20K dataset, which is available for download with the script: 
 ```
 wget http://groups.csail.mit.edu/vision/datasets/ADE20K/ADE20K_2016_07_26.zip 
-
 unzip ADE20K_2016_07_26.zip 
 ```
 Place the data under `nbdt-segmentation/data/ade20k`.
-To run the script, put the path to the pretrained model as the `TEST.MODEL\_FILE` parameter in the config file.
+To run the script, put the path to the pretrained model as the `TEST.MODEL_FILE` parameter in the config file and run
 
 ```
 python ade20k_car_part_analysis.py —cfg CONFIG_FILE —index INDEX —path-graph PATH_TO_NBDT_HIERARCHY_PATH_GRAPH —wnid WNID_OF_NODE
 ```
 
-- cfg: config file for nbdt-segmentation
-- path\_graph: path to the nbdt hierarchy path graph
-- wnid: wnid of node to run analysis on 
-- index: index of the input ADE20K image (0-indexed)
+- `cfg`: config file for nbdt-segmentation
+- `path_graph`: path to the nbdt hierarchy path graph
+- `wnid`: wnid of node to run analysis on 
+- `index`: index of the input ADE20K image (0-indexed)
 
 # Results
 
