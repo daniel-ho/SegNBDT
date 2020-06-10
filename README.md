@@ -625,7 +625,7 @@ python ade20k_car_part_analysis.py —cfg CONFIG_FILE —index INDEX —path-gra
 - `index`: index of the input ADE20K image (0-indexed)
 
 <details>
-#### Example
+<summary>Example</summary>
 
 ![car_part_analysis](https://user-images.githubusercontent.com/11863465/84226818-a730d380-aa97-11ea-944d-0a3ad8663a1b.png)
 
