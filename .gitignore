@@ -1,4 +1,7 @@
 data/cityscapes
+data/ade20k
+data/pascal_ctx
+data/lip
 pretrained_models/
 *.pyc
 .DS_Store
