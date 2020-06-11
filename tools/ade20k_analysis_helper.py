@@ -16,7 +16,7 @@ from scipy.ndimage.interpolation import zoom
 import cv2
 from PIL import Image
 
-ADE_ROOT = '../data/ade20k_full'
+ADE_ROOT = 'data/ade20k_full'
 ADE_VER = 'ADE20K_2016_07_26'
 
 def decodeClassMask(im):
@@ -48,7 +48,7 @@ class Dataset:
         # Default to value of ADE20_ROOT env variable
         if directory is None:
             directory = ADE_ROOT
-        directory = os.path.expanduser(directory)
+        directory = os.path.join(os.getcwd(), directory)
         # Default to the latest version present in the directory
         if version is None:
             contents = os.listdir(directory)

@@ -2,7 +2,7 @@ EasyDict==1.7
 opencv-python==3.4.1.15
 shapely==1.6.4
 Cython
-scipy
+scipy==1.1.0
 pandas
 pyyaml
 json_tricks

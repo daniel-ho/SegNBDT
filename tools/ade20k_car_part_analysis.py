@@ -17,7 +17,7 @@ from config import config
 from config import update_config
 from torch.nn import functional as F
 from nbdt.utils import (coerce_tensor, uncoerce_tensor)
-from ade20k_parts_helper import Dataset
+from ade20k_analysis_helper import Dataset
 
 def parse_args():
     parser = argparse.ArgumentParser(description='ADE20K Node Hypotheses')
@@ -29,10 +29,6 @@ def parse_args():
                         help='index of ADE20K image to run annalysis on',
                         required=True,
                         type=int)
-    parser.add_argument('--path-graph',
-                        help='path graph of NBDT hierarchy',
-                        required=True,
-                        type=str)
     parser.add_argument('--wnid',
                         help='wnid of ADE20K node to run analysis on',
                         required=True,
@@ -68,7 +64,7 @@ def main():
     # build model
     model = eval('models.'+config.MODEL.NAME +
                  '.get_seg_model')(config)
-    model_state_file = config.TEST.MODEL_FILE 
+    model_state_file = config.TEST.MODEL_FILE
     pretrained_dict = torch.load(model_state_file)
     model_dict = model.state_dict()
     pretrained_dict = {k[6:]: v for k, v in pretrained_dict.items()
@@ -77,11 +73,9 @@ def main():
     model.load_state_dict(model_dict)
     model1 = model.eval() 
 
-    model2 = HardSegNBDT(
-            dataset=config.NBDT.DATASET, 
-            model=model1, 
-            path_graph=args.path_graph,
-            hierarchy=config.NBDT.HIERARCHY)
+    model2 = HardSegNBDT(dataset=config.NBDT.DATASET,
+                         model=model1,
+                         hierarchy=config.NBDT.HIERARCHY)
     
     model2 = model2.eval()
     node = model2.rules.wnid_to_node[args.wnid]
