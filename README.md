@@ -624,7 +624,7 @@ Place the dataset in the `data` directory under `ade20k_full`, i.e. the full pat
 
 To run the script, specify the path to the pretrained model using the `TEST.MODEL_FILE` parameter and run
 ```
-python ade20k_car_part_analysis.py —cfg ${CONFIG} —index ${INDEX} —path-graph ${PATH_GRAPH} —wnid ${WNID}
+python ade20k_car_part_analysis.py —cfg ${CONFIG} —index ${INDEX} —path-graph ${PATH_GRAPH} —wnid ${WNID} TEST.MODEL_FILE ${CHECKPOINT}
 ```
 - `cfg`: ADE20K scene parsing configuration file (e.g. `experiments/ade20k/nbdt/*.yml`)
 - `path_graph`: path to the NBDT hierarchy path graph
@@ -633,7 +633,12 @@ python ade20k_car_part_analysis.py —cfg ${CONFIG} —index ${INDEX} —path-gr
 
 Consider the following example:
 ```
-python tools/ade20k_car_part_analysis.py --cfg experiments/ade20k/nbdt/seg_hrnet_w48_520x520_sgd_lr2e-2_wd1e-4_bs_16_epoch120_tsw10.yaml --index 2038 --path-graph graph-induced-HRNet-w48.json --wnid f00000255
+python tools/ade20k_car_part_analysis.py \
+    --cfg experiments/ade20k/nbdt/seg_hrnet_w48_520x520_sgd_lr2e-2_wd1e-4_bs_16_epoch120_tsw10.yaml \
+    --index 2038 \
+    --path-graph graph-induced-HRNet-w48.json \
+    --wnid f00000255 \
+    TEST.MODEL_FILE output/ade20k/seg_hrnet_w48_520x520_sgd_lr2e-2_wd1e-4_bs_16_epoch120_tsw10/best.pth
 ```
 ![car_part_analysis](https://user-images.githubusercontent.com/11863465/84226818-a730d380-aa97-11ea-944d-0a3ad8663a1b.png)
 
