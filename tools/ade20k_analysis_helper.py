@@ -44,19 +44,12 @@ def encodeClassMask(im, offset=0):
     return result
 
 class Dataset:
-    def __init__(self, directory=None, version=None, obj_id = None, transforms=None):
+    def __init__(self, directory=None, obj_id = None, transforms=None):
         # Default to value of ADE20_ROOT env variable
         if directory is None:
             directory = ADE_ROOT
         directory = os.path.join(os.getcwd(), directory)
-        # Default to the latest version present in the directory
-        if version is None:
-            contents = os.listdir(directory)
-            if not list(c for c in contents if re.match('^index.*mat$', c)):
-                version = sorted(c for c in contents if os.path.isdir(
-                    os.path.join(directory, c)))[-1]
-            else:
-                version = ''
+
         self.root = directory
         self.version = ADE_VER
         self.transforms = transforms
