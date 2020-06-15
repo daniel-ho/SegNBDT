@@ -1,6 +1,6 @@
 # SegNBDT: Visual Decision Rules for Segmentation
 
-[Project Page]() &nbsp;//&nbsp; [Paper]() (Coming Soon)
+[Project Page]() (Coming Soon) &nbsp;//&nbsp; [Paper](https://arxiv.org/abs/2006.06868)
 
 *By \*Alvin Wan, \*Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
 
@@ -254,9 +254,7 @@ python tools/test.py --cfg experiments/lip/seg_hrnet_w48_473x473_sgd_lr7e-3_wd5e
 
 Configuration files for visualizations are located under `experiments/cityscapes/vis/*`. Note that the visualization configurations are identical to their training configuration counterpart aside from number of GPUs used. For example, `experiments/cityscapes/vis/vis_seg_hrnet_w18_small_v1_512x1024_tsw10.yaml` is the same as `experiments/cityscapes/nbdt/seg_hrnet_w18_small_v1_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484_tsw10.yaml`. Thus to generate visualizations for other datasets, the configurations can simply be copy and pasted.
 
-(inncluded picture of hierarchy, so users can pick a node of choicec for below command)
-
-instructions on how to generate image-wide gradpam. got a node, class, and image in mind?
+How to generate image-wide GradPAM. Got a node, class, and image in mind?
 
 ```
 python tools/vis_gradcam.py \
@@ -270,8 +268,7 @@ python tools/vis_gradcam.py \
 		NBDT.USE_NBDT True;
 ```
 
-
-instructions on how to generate SegNBDT visual decision rules + gradpams. got a class in mind? automattiaclly finds nodes for that class. runs over a lot of images.
+How to generate SegNBDT visual decision rules + GradPAMS. Got a class in mind? Automatically find nodes for that class and run over many images.
 
 <details>
 	<summary>1. Generate saliency maps</summary>
@@ -652,8 +649,15 @@ All models use the HRNetV2-W48 architecture initialized by weights pretrained on
 
 # Citation
 
-If you find this work useful for your research, please cite our [paper]():
+If you find this work useful for your research, please cite our [paper](https://arxiv.org/abs/2006.06868):
 
 ```
-Citation coming soon
+@misc{wan2020segnbdt,
+    title={SegNBDT: Visual Decision Rules for Segmentation},
+    author={Alvin Wan and Daniel Ho and Younjin Song and Henk Tillman and Sarah Adel Bargal and Joseph E. Gonzalez},
+    year={2020},
+    eprint={2006.06868},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
 ```
