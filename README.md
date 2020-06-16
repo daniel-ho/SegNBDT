@@ -1,6 +1,6 @@
 # SegNBDT: Visual Decision Rules for Segmentation
 
-[Project Page]() (Coming Soon) &nbsp;//&nbsp; [Paper](https://arxiv.org/abs/2006.06868)
+[Project Page](http://segnbdt.aaalv.in) &nbsp;//&nbsp; [Paper](https://arxiv.org/abs/2006.06868)
 
 *By \*Alvin Wan, \*Daniel Ho, Younjin Song, Henk Tillman, Sarah Adel Bargal, Joseph E. Gonzalez*
 
